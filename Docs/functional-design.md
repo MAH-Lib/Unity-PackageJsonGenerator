@@ -54,7 +54,7 @@ PackageJson Generator/
         └── VersionOperatorConverter.cs  # 条件enum⇔演算子文字列、バージョン制約の分解
 ```
 
-> ※ 開発用プロジェクトの `Assets/MAH/Library/Editor/Utility/LanguageUtility.cs` はこのパッケージに含まれず、どこからも参照されていない
+> ※ 開発用プロジェクトの `Assets/@MAH/Editor/Utility/LanguageUtility.cs` はこのパッケージに含まれず、どこからも参照されていない
 
 ### 2.2 状態
 

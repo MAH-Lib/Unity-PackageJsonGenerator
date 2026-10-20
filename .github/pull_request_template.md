@@ -13,7 +13,7 @@
 ## Checklist
 
 - [ ] Target branch is `develop` (not `main`)
-- [ ] Code changes were made in `src/PackageJsonGenerator/Assets/MAH/Library/PackageJson Generator/` (not directly in `PackageJsonGenerator/`)
+- [ ] Code changes were made in `src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator/` (not directly in `PackageJsonGenerator/`)
 - [ ] The distribution folder `PackageJsonGenerator/` is synced (see CONTRIBUTING.md §4)
 - [ ] New files have `.meta` files, and existing GUIDs are unchanged
 - [ ] `CHANGELOG.md` `[Unreleased]` is updated (if users are affected)

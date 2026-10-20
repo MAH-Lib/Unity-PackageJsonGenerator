@@ -31,7 +31,7 @@ Docs/functional-design.md    <!-- 入力項目⇔JSONキー対応、検証仕様
 - 既知の問題（K-xx）を直すときは、該当する ID を確認し、修正後に functional-design.md の §8 を更新する
 
 ### やってはいけないこと
-- 配布フォルダ `PackageJsonGenerator/` を直接編集しない。編集するのは `src/PackageJsonGenerator/Assets/MAH/Library/PackageJson Generator/` だけ。配布フォルダへは CONTRIBUTING.md §4 の手順でコピーする（2 つが食い違うと、利用者に古いコードが届くため）
+- 配布フォルダ `PackageJsonGenerator/` を直接編集しない。編集するのは `src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator/` だけ。配布フォルダへは CONTRIBUTING.md §4 の手順でコピーする（2 つが食い違うと、利用者に古いコードが届くため）
 - `.meta` ファイルの GUID を作り直したり書き換えたりしない（利用者のプロジェクトで参照が切れるため）
 - 新しいファイルを作ったら `.meta` も作る。GUID は新しく生成した 32 桁の 16 進数にする
 - 対応下限の Unity 6000.0 に無い API を使わない
@@ -60,8 +60,9 @@ Docs/functional-design.md    <!-- 入力項目⇔JSONキー対応、検証仕様
 
 ## プロジェクト固有の注意点（罠・落とし穴）
 
-- パッケージのフォルダ名は空白を含む `PackageJson Generator`。シェルで扱うときは必ず引用符で囲む
-- `Assets/MAH/Library/Editor/Utility/LanguageUtility.cs` はパッケージに含まれない。パッケージのコードから参照しない
+- パッケージのフォルダ名 `PackageJson Generator` には空白が入り、その親フォルダ `@MAH` は `@` で始まる。シェルで扱うときは必ず引用符で囲む（PowerShell は、引用符の無い `@` で始まる引数をスプラッティングとして解釈するため）
+- `Assets/` 配下のフォルダを VS Code を開いたまま `git mv` で丸ごと移動すると、`Permission denied` になることがある。その場合は、ファイルを 1 つずつ `git mv` してから空のフォルダを削除する
+- `Assets/@MAH/Editor/Utility/LanguageUtility.cs` はパッケージに含まれない。パッケージのコードから参照しない
 - ドキュメントの言語：利用者向け（README、パッケージ内の README・CHANGELOG、`.github/` のテンプレート）は英語、開発者向け（Docs/、CONTRIBUTING.md、本書）は日本語
 - UPM の `dependencies` は完全一致のバージョンしか受け付けない（既知の問題 K-1）。比較演算子が使える前提のコードを書かない
 - この環境には Python が入っていない。スクリプトは PowerShell か Git Bash で書く

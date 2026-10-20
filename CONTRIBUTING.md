@@ -11,7 +11,7 @@
 Unity-PackageJsonGenerator/
 ├── PackageJsonGenerator/          # 配布フォルダ（Git URL の ?path= が指す場所。利用者はここをインストールする）
 ├── src/PackageJsonGenerator/      # 開発用 Unity プロジェクト
-│   └── Assets/MAH/Library/
+│   └── Assets/@MAH/
 │       ├── PackageJson Generator/ # ★ パッケージ本体の開発場所（配布フォルダと同じ内容）
 │       └── Editor/Utility/        # パッケージに含まれない共通コード（LanguageUtility.cs。現在は未使用）
 ├── Docs/                          # 開発者向けドキュメント
@@ -48,7 +48,7 @@ Unity-PackageJsonGenerator/
 ### 3.2 変更の手順
 
 1. `develop` から作業ブランチを作る
-2. **`src/PackageJsonGenerator/Assets/MAH/Library/PackageJson Generator/` の中だけ** を編集する（配布フォルダは直接編集しない）
+2. **`src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator/` の中だけ** を編集する（配布フォルダは直接編集しない）
 3. Unity で動作を確認する（§5）
 4. 利用者に関係する変更なら、`CHANGELOG.md` の `[Unreleased]` に追記する
 5. 仕様や既知の問題が変わったら、[Docs/functional-design.md](Docs/functional-design.md) も更新する
@@ -78,7 +78,7 @@ Unity-PackageJsonGenerator/
 PowerShell（リポジトリの直下で実行）：
 
 ```powershell
-robocopy "src\PackageJsonGenerator\Assets\MAH\Library\PackageJson Generator" "PackageJsonGenerator" /MIR
+robocopy "src\PackageJsonGenerator\Assets\@MAH\PackageJson Generator" "PackageJsonGenerator" /MIR
 ```
 
 > `/MIR` を付けると、開発用フォルダに無いファイルは配布フォルダから削除されます。配布フォルダにしか無いファイルを置かないでください。
@@ -86,7 +86,7 @@ robocopy "src\PackageJsonGenerator\Assets\MAH\Library\PackageJson Generator" "Pa
 同期できたかの確認（Git Bash）：
 
 ```bash
-diff -r "src/PackageJsonGenerator/Assets/MAH/Library/PackageJson Generator" PackageJsonGenerator && echo OK
+diff -r "src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator" PackageJsonGenerator && echo OK
 ```
 
 ## 5. 動作確認
