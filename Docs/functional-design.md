@@ -13,10 +13,16 @@ Unity Editor の中だけで動く拡張機能（`#if UNITY_EDITOR`、asmdef `MA
 ```mermaid
 graph TB
     subgraph Editor["Unity Editor"]
-        Menu["MenuItem<br/>MAH/Generator/PackageJson Generator Window"] --> Window["PackageJsonCreateWindow<br/>(EditorWindow / IMGUI)"]
+        Menu["MenuItem<br/>MAH/Generator/PackageJson Generator Window"] --> Window["PackageJsonCreateWindow<br/>(EditorWindow / IMGUI。配置と Create・Load)"]
+        Window --> Drawer["Drawer 群<br/>RequiredSettingsDrawer / OptionalSettingsDrawer<br/>SamplesDrawer / DependenciesDrawer"]
         Window --> Settings["PackageRequiredSettings<br/>PackageOptionalSettings"]
-        Window --> Conv["Converter 群<br/>UnityVersionConverter / SPDXLicenseConverter / VersionOperatorConverter"]
-        Window --> Helper["UnityPackageHelper<br/>(登録済みパッケージ一覧)"]
+        Drawer --> Settings
+        Window --> Validator["PackageJsonValidator<br/>(入力の検証・生成前チェック)"]
+        Window --> SConv["PackageSettingsConverter<br/>(入力状態 ⇔ PackageJsonInfo)"]
+        Drawer --> Validator
+        SConv --> Conv["Converter 群<br/>UnityVersionConverter / VersionOperatorConverter"]
+        Drawer --> Lic["SPDXLicenseConverter"]
+        Drawer --> Helper["UnityPackageHelper<br/>(登録済みパッケージ一覧)"]
         Window --> FileUtil["PackageJsonFileUtility<br/>(Newtonsoft.Json)"]
     end
     FileUtil -->|File.WriteAllText / ReadAllText| Json[("<出力フォルダ>/package.json")]
@@ -36,7 +42,15 @@ PackageJson Generator/
 ├── package.json                         # このツール自身のパッケージ定義
 └── Editor/
     ├── MAH.PackageJson_Generator.Editor.asmdef
-    ├── PackageJsonCreateWindow.cs       # UI描画・入力検証・設定⇔JSONモデル変換（約1,080行に責務が集中）
+    ├── AssemblyInfo.cs                  # InternalsVisibleTo（開発用プロジェクトのテストから internal を呼ぶため）
+    ├── PackageJsonCreateWindow.cs       # Window の生成・全体の配置・ファイル操作の欄・Create / Load・操作結果の表示
+    ├── Drawer/
+    │   ├── FieldErrorStore.cs           # 欄ごとの入力エラー（§4）
+    │   ├── DrawerUtility.cs             # 共通のラベル・レイアウト・検証付き入力欄・バージョン入力欄
+    │   ├── RequiredSettingsDrawer.cs    # 必須項目の描画（ライセンスの選択状態を持つ）
+    │   ├── OptionalSettingsDrawer.cs    # 任意項目（Unity 情報・ドキュメント・キーワード）の描画。下の 2 つを持つ
+    │   ├── SamplesDrawer.cs             # サンプルの描画
+    │   └── DependenciesDrawer.cs        # 外部パッケージの描画
     ├── Definition/
     │   ├── PackageJsonInfo.cs           # JSONシリアライズ用モデル（[JsonProperty]）
     │   ├── AuthorInfo.cs / SampleInfo.cs# JSONモデルの子要素（UIの入力値としても使う）
@@ -46,6 +60,8 @@ PackageJson Generator/
     │   └── LicenseType.cs               # ライセンス選択肢 enum
     └── Utility/
         ├── PackageJsonFileUtility.cs    # 保存・読込、空値除外 Resolver
+        ├── PackageJsonValidator.cs      # 入力の検証（§4）と生成前チェック（§4.3）
+        ├── PackageSettingsConverter.cs  # 入力状態 ⇔ PackageJsonInfo の変換。警告は List<string> で返す（Debug を使わない）
         ├── SPDXLicenseUtility.cs        # クラス名は SPDXLicenseConverter
         ├── UnityPackageHelper.cs        # プロジェクトに登録済みのパッケージ名・バージョンのキャッシュ
         ├── UnityVersionConverter.cs     # 対応 Unity バージョンの選択肢の表（§3.4）と unity 文字列の解析
@@ -53,25 +69,28 @@ PackageJson Generator/
 ```
 
 > ※ 開発用プロジェクトの `Assets/@MAH/Editor/Utility/LanguageUtility.cs` はこのパッケージに含まれず、どこからも参照されていない
+> ※ 開発用プロジェクトの `Assets/@MAH/Tests/Editor/` に、`PackageJsonValidator` と `PackageSettingsConverter` の EditMode テストがある（パッケージには含まれない）
 
 ### 2.2 状態
 
-フェーズ（状態機械）は無い。入力状態は `PackageJsonCreateWindow` のフィールドに保持される。
+フェーズ（状態機械）は無い。入力状態は `PackageJsonCreateWindow` のフィールドに、画面の状態（Foldout の開閉など）は各 Drawer のフィールドに保持される。
 
-| フィールド | 型 | シリアライズ | 説明 |
-|---|---|---|---|
-| `_scrollPos` | `Vector3` | ○ | スクロール位置 |
-| `_requiredSettings` | `PackageRequiredSettings` | ○ | 必須項目 |
-| `_optionalSettings` | `PackageOptionalSettings` | ○ | 任意項目 |
-| `_licenseType` / `_licenseName` | `LicenseType` / `string` | ○ | ライセンスの選択値と表示名 |
-| `_pacckageJsonPath` | `string` | ○ | 入出力フォルダ。初期値は `Assets` |
-| `_isShowKeyword` / `_isShowSamples` / `_isShowDependencies` | `bool` | ○ | 各リストの Foldout 開閉 |
-| `_isInitialized` | `bool` | ○ | 初期化済みかどうか |
-| `_fieldErrors` | `Dictionary<object, string>` | — | 欄ごとの入力エラー（§4）。キーは欄の定数、またはリストの行のオブジェクト |
-| `_resultMessage` / `_resultMessageType` / `_warningCount` | `string` / `MessageType` / `int` | — | 最後の Create・Load の結果と警告の件数（§5） |
+| 持ち主 | フィールド | 型 | シリアライズ | 説明 |
+|---|---|---|---|---|
+| Window | `_scrollPos` | `Vector3` | ○ | スクロール位置 |
+| Window | `_requiredSettings` | `PackageRequiredSettings` | ○ | 必須項目 |
+| Window | `_optionalSettings` | `PackageOptionalSettings` | ○ | 任意項目 |
+| Window | `_pacckageJsonPath` | `string` | ○ | 入出力フォルダ。初期値は `Assets` |
+| Window | `_requiredDrawer` / `_optionalDrawer` | `RequiredSettingsDrawer` / `OptionalSettingsDrawer` | ○ | 各セクションの Drawer（下の画面の状態を持つ） |
+| Window | `_isInitialized` | `bool` | ○ | 初期化済みかどうか |
+| Window | `_fieldErrors` | `FieldErrorStore` | — | 欄ごとの入力エラー（§4）。キーは欄の定数、またはリストの行のオブジェクト |
+| Window | `_resultMessage` / `_resultMessageType` / `_warningCount` | `string` / `MessageType` / `int` | — | 最後の Create・Load の結果と警告の件数（§5） |
+| `RequiredSettingsDrawer` | `_licenseType` / `_licenseName` | `LicenseType` / `string` | ○ | ライセンスの選択値と表示名 |
+| `OptionalSettingsDrawer` | `_isShowKeyword`、`_samplesDrawer` / `_dependenciesDrawer` | `bool`、各 Drawer | ○ | キーワードの Foldout 開閉と、サンプル・外部パッケージの Drawer |
+| `SamplesDrawer` / `DependenciesDrawer` | `_isShowSamples` / `_isShowDependencies` | `bool` | ○ | 各リストの Foldout 開閉 |
 
-「シリアライズ ○」のフィールドは `[SerializeField]` で、入力状態のクラス（`PackageRequiredSettings`、`PackageOptionalSettings`、`DependenciesInfo`、`AuthorInfo`、`SampleInfo`）も `[Serializable]` にしてある。そのため、スクリプトの再コンパイルなどのドメインリロードでは入力が残る。ウィンドウを閉じると消える。
-`OnEnable` は `_isInitialized` が `false` のとき（ウィンドウを開いたとき）だけ上記を初期化する。`UnityPackageHelper.LoadPackageInfo()` は、static のキャッシュがドメインリロードで消えるため毎回呼ぶ。
+「シリアライズ ○」のフィールドは `[SerializeField]` で、入力状態のクラス（`PackageRequiredSettings`、`PackageOptionalSettings`、`DependenciesInfo`、`AuthorInfo`、`SampleInfo`）と Drawer も `[Serializable]` にしてある。そのため、スクリプトの再コンパイルなどのドメインリロードでは入力と画面の状態が残る。ウィンドウを閉じると消える。
+`OnEnable` は `_isInitialized` が `false` のとき（ウィンドウを開いたとき）だけ、入力状態と Drawer を作り直してライセンスを初期値にする。`UnityPackageHelper.LoadPackageInfo()` は、static のキャッシュがドメインリロードで消えるため毎回呼ぶ。
 
 ### 2.3 データフロー
 
@@ -83,7 +102,7 @@ sequenceDiagram
     participant D as package.json
     U->>W: 入力（確定した値が変わったときに検証。不正なら欄の下にエラー）
     U->>W: Create package.json（delayCall で OnGUI の外で処理）
-    W->>W: IsCanCreatePackageJson()（必須項目・名前の形式・外部パッケージ名の重複）
+    W->>W: PackageJsonValidator.CanCreatePackageJson()（必須項目・名前の形式・外部パッケージ名の重複）
     alt チェックに失敗
         W-->>U: 操作結果にエラーを表示して中止
     end
@@ -91,7 +110,7 @@ sequenceDiagram
         W->>U: 上書きの確認ダイアログ
         U-->>W: キャンセルなら中止
     end
-    W->>W: ConvertToPackageJsonInfo()
+    W->>W: PackageSettingsConverter.ConvertToPackageJsonInfo()（警告は Console に出して件数を数える）
     W->>F: TrySavePackageJson(folder, info)
     F->>D: Indented JSON を保存 → AssetDatabase.Refresh()
     F-->>W: 成否とエラー文（フォルダが無い・書き込み失敗）
@@ -102,7 +121,7 @@ sequenceDiagram
     alt 失敗
         W-->>U: 操作結果にエラーを表示（入力はそのまま）
     else 成功
-        W->>W: 入力エラーを消して ConvertToPackageSettings(info)
+        W->>W: 入力エラーを消して PackageSettingsConverter.ConvertToPackageSettings(info)、ライセンスの選択を合わせる
         W-->>U: 操作結果を表示（警告があれば件数も）
     end
 ```
@@ -203,7 +222,7 @@ Load したときに表に無い SPDX ID が書かれていた場合は `Other` 
 検証に通らなかった入力は破棄されて直前の値が残り、**欄の下に赤いエラー（入力した値と正しい形式の例）が表示される**。正しい値か空を入力するとエラーは消える。Load に成功したときも、すべてのエラーが消える。
 検証付きの欄は `DelayedTextField` で、Enter かフォーカスアウトで確定し、値が変わったときだけ検証する（毎フレーム検証すると、`DelayedTextField` が次のフレームで今の値を返すため、エラーがすぐ消えてしまう）。エラーを表示する欄：パッケージ名、著者の E-mail・URL、変更ログ・ドキュメント・ライセンスの URL、外部パッケージ名（行ごと）、サンプルのパス（行ごと）。
 
-### 4.1 パッケージ名（`IsValidPackageName`）
+### 4.1 パッケージ名（`PackageJsonValidator.IsValidPackageName`）
 
 - 正規表現：`^[a-z0-9\-]+(\.[a-z0-9\-]+)+$`（ドットで区切った 2 要素以上）
 - 入力値は先に `ToLowerInvariant()` で小文字化される
@@ -219,7 +238,7 @@ Load したときに表に無い SPDX ID が書かれていた場合は `Other` 
 
 各 URL 欄の `Open URL` ボタンは、設定済みの値を `Application.OpenURL` で開く。
 
-### 4.3 生成前チェック（`IsCanCreatePackageJson`）
+### 4.3 生成前チェック（`PackageJsonValidator.CanCreatePackageJson`）
 
 次のどれかが空白なら `Debug.LogError` を出して生成を中止する：パッケージ名、概要、UPM表示名、ライセンス、著者名。バージョンと Unity バージョンはチェックしない。
 
@@ -227,7 +246,7 @@ Load したときに表に無い SPDX ID が書かれていた場合は `Other` 
 
 続けて、外部パッケージ名の重複を調べる。名前が正しい形式の行のうち、同じ名前が 2 件以上あれば、重複した名前を `Debug.LogError` に出して生成を中止する（名前が正しくない行は出力されないので対象外）。
 
-### 4.4 サンプルのパス（`IsValidSampleFolderpath`）
+### 4.4 サンプルのパス（`PackageJsonValidator.IsValidSampleFolderpath`）
 
 1. `Browse` でフォルダを選ぶか、テキストを直接入力する（`DelayedTextField` なので、Enter かフォーカスアウトで確定したときに処理する）
 2. `\` を `/` に置き換え、`/` で区切ってフォルダ名の並びにする
@@ -343,9 +362,9 @@ Load で値が無い・形式が違う場合も例外は出さず、次のよう
 | K-17 | 不具合 | **修正済み（2026-10-20）**：enum をやめて `UnityVersionConverter` の表にし、`6000.6` と `5.0` を足した（§3.4）。対応 Unity の選択肢が古い（Unity 6 は 6000.0〜6000.2 まで。Unity 5 に 5.0 が無い） | `Definition/UnityVersion/` |
 | K-18 | 不具合 | **修正済み（2026-10-20）**：Load 時に小文字化して警告を出し、生成前チェックで形式も確かめるようにした。ライセンスは K-3 の修正で入力欄に表示・編集できる（§3.3）。Load したパッケージ名は検証されない。Load したライセンスが `Other` の場合、SPDX ID が UI に表示されない | `ConvertToPackageSettings` |
 | K-19 | 表記 | UI ラベルの誤字：`UMP除外フラグ`（正しくは UPM）。識別子の誤字：`_pacckageJsonPath`、`PacckageName`、`PACKGAGE_*` など（`VersionOperater.cs` は 2026-10-20 に K-1 の修正でファイルごと削除） | 各所 |
-| K-20 | 設計 | `PackageJsonCreateWindow` が UI・検証・変換をすべて抱えている（約1,080行） | — |
+| K-20 | 設計 | **修正済み（2026-10-21）**：検証（`PackageJsonValidator`）・変換（`PackageSettingsConverter`）・描画（`Drawer/`）に分け、検証と変換に EditMode テストを付けた（§2.1）。`PackageJsonCreateWindow` が UI・検証・変換をすべて抱えている（約1,080行） | — |
 | K-21 | 設計 | 開発用プロジェクトと配布フォルダに同じコードが二重にあり、手動で同期している（同期漏れのため、package.json の version が 1.0.0 と 1.0.1 で食い違っていたことがある。2026-10-20 に 1.0.1 へ揃えた） | `CONTRIBUTING.md` を参照 |
-| K-22 | 設計 | バージョン番号やバージョン構成要素に負の値を入力できる | `IntField` 各所 |
+| K-22 | 設計 | **修正済み（2026-10-21）**：負の値は 0 にするようにした（`DrawerUtility.DrawVersionFields`）。バージョン番号やバージョン構成要素に負の値を入力できる | `IntField` 各所 |
 | K-23 | 運用 | Git タグの命名が揃っていない（`v1.0.0` と `1.0.1`）。また、タグ `1.0.1` は package.json を 1.0.1 に上げる前のコミット（95ee343）を指している | Git タグ |
 | K-24 | 不具合 | **修正済み（2026-10-20）**：確定時にだけ検証する `DelayedTextField` に変えた。依存パッケージ名の欄が 1 文字ごとに検証されるため、`com.example.` のように `.` で終わる途中の値が不正として捨てられ、3 要素以上の名前を手で入力できなかった | `DrawDependenciesSettings` |
 | K-25 | 不具合 | **修正済み（2026-10-20）**：確定時にだけ検証する `DelayedTextField` に変えた。サンプルのパス欄が 1 文字ごとに検証されるため、入力途中の値が不正として捨てられ、パスを手で入力できなかった | `DrawSamplesInfoSettings` |

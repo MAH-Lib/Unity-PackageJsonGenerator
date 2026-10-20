@@ -1,6 +1,6 @@
 # 開発ガイド（CONTRIBUTING）
 
-> 最終更新日：2026-10-20 ／ 対象：`com.mah.package-json-generator` v1.0.1 ／ 開発環境 Unity 6000.3.26f1
+> 最終更新日：2026-10-21 ／ 対象：`com.mah.package-json-generator` v1.0.1 ／ 開発環境 Unity 6000.3.26f1
 > 関連文書：[README.ja.md](README.ja.md)（利用者向け）／[Docs/functional-design.md](Docs/functional-design.md)（現状仕様・既知の問題）／[CLAUDE.md](CLAUDE.md)（AI 向け作業ルール）
 
 このリポジトリで開発する人のための手順書です。利用者向けの説明は README にあります。
@@ -13,6 +13,7 @@ Unity-PackageJsonGenerator/
 ├── src/PackageJsonGenerator/      # 開発用 Unity プロジェクト
 │   └── Assets/@MAH/
 │       ├── PackageJson Generator/ # ★ パッケージ本体の開発場所（配布フォルダと同じ内容）
+│       ├── Tests/Editor/          # EditMode テスト（パッケージに含まれない。§5）
 │       └── Editor/Utility/        # パッケージに含まれない共通コード（LanguageUtility.cs。現在は未使用）
 ├── Docs/                          # 開発者向けドキュメント
 ├── Image/                         # README 用の画像
@@ -91,7 +92,20 @@ diff -r "src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator" PackageJson
 
 ## 5. 動作確認
 
-自動テストはまだありません。変更したら、少なくとも次の項目を手で確認してください。
+### 5.1 自動テスト（EditMode）
+
+入力の検証（`PackageJsonValidator`）と、入力状態と JSON の変換（`PackageSettingsConverter`）には、EditMode テストがあります。変更したら、まず次の手順でテストを実行してください。
+
+1. Unity のメニュー **Window > General > Test Runner** を開く
+2. **EditMode** タブで **Run All** を押す
+3. `MAH.PackageJson_Generator.Editor.Tests` のテストがすべて成功（緑）になることを確かめる
+
+テストは `src/PackageJsonGenerator/Assets/@MAH/Tests/Editor/` にあり、パッケージには含めません（配布フォルダへの同期の対象外）。パッケージ側の `Editor/AssemblyInfo.cs` の `InternalsVisibleTo` で、テストから `internal` のクラスを呼べるようにしています。
+検証や変換の処理を変えたら、テストも追加・修正してください。画面（Drawer・Window）の自動テストはありません。
+
+### 5.2 手での確認
+
+変更したら、少なくとも次の項目を手で確認してください。
 
 - [ ] ウィンドウが開き、Console にエラーが出ない
 - [ ] 必須項目を入力して **Create package.json** を押すと、ファイルが作成される
