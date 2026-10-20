@@ -70,7 +70,7 @@ UPM（Unity Package Manager）対応パッケージを公開するときに必�
 | 必須 | バージョン | `version` | Major / Minor / Patch |
 | 必須 | UPM表示名 | `displayName` | Package Manager に表示される名前 |
 | 必須 | 概要 | `description` | |
-| 必須 | 対応 Unity バージョン設定 | `unity` | 対応する Unity の最低バージョン（例：`6000.0`） |
+| 必須 | 対応 Unity バージョン設定 | `unity` | 対応する Unity の最低バージョン（例：`6000.0`）。Unity 5.0〜Unity 6.6（`6000.6`）から選びます |
 | 必須 | ライセンス | `license` | 主な SPDX ライセンスから選びます |
 | 必須 | 著者情報設定 | `author` | 著者名は必須、E-mail と URL は任意 |
 | 任意 | リリースバージョン | `unityRelease` | 例：`0f1` |
@@ -78,17 +78,13 @@ UPM（Unity Package Manager）対応パッケージを公開するときに必�
 | 任意 | 変更ログURL / ドキュメントURL / ライセンスURL | `changelogUrl` / `documentationUrl` / `licensesUrl` | `http://` か `https://` で始まる URL |
 | 任意 | キーワード | `keywords` | |
 | 任意 | サンプル | `samples` | パスは `Samples~` から始まる形に変換されます |
-| 任意 | 外部パッケージ | `dependencies` | プロジェクトに入っているパッケージから選ぶこともできます |
+| 任意 | 外部パッケージ | `dependencies` | Unity Package Manager の仕様に合わせ、バージョンは完全一致（`X.Y.Z`）だけです。プロジェクトに入っているパッケージから選ぶこともできます |
 
 任意項目のうち、空欄のものはファイルに出力されません。
 
 ## 既知の制限事項
 
-- 入力値がチェックに通らない場合（パッケージ名、E-mail、URL の形式が正しくないときなど）、メッセージは表示されず、直前の値のままになります。
-- **Create package.json** は、同じ場所にファイルがあっても確認せずに上書きします。
-- 入力した内容は保存されません。ウィンドウを開き直したり、スクリプトが再コンパイルされたりすると消えます。
-- Unity Package Manager の `dependencies` は、バージョンの完全一致しか受け付けません。比較条件や範囲指定（`>=`、`Range` など）は使わないでください。
-- ライセンスで **Other** を選ぶ機能は、まだ使えません。
+- 入力した内容は、スクリプトが再コンパイルされても残りますが、ウィンドウを閉じると消えます。
 
 これらは今後のアップデートで改善する予定です。
 

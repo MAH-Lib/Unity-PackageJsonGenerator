@@ -1,26 +1,29 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
 {
+    [Serializable]
     internal class PackageOptionalSettings
     {
         /// <summary> 更新ログURL </summary>
-        internal string ChangelogURL;
+        [SerializeField] internal string ChangelogURL;
         /// <summary> ドキュメントURL </summary>
-        internal string DocumentationURL;
+        [SerializeField] internal string DocumentationURL;
         /// <summary> ライセンスURL </summary>
-        internal string LicensesURL;
+        [SerializeField] internal string LicensesURL;
         /// <summary> リリースバージョン </summary>
-        internal string UnityRelease;
+        [SerializeField] internal string UnityRelease;
         /// <summary> UPMウィンドウ表示判定 </summary>
-        internal bool HideInEditor;
+        [SerializeField] internal bool HideInEditor;
         /// <summary> パッケージキーワード </summary>
-        internal List<string> Keywords;
+        [SerializeField] internal List<string> Keywords;
         /// <summary> 外部パッケージ </summary>
-        internal List<DependenciesInfo> Dependencies;
+        [SerializeField] internal List<DependenciesInfo> Dependencies;
         /// <summary> サンプル </summary>
-        internal List<SampleInfo> SamplesInfo;
+        [SerializeField] internal List<SampleInfo> SamplesInfo;
 
         //====コンストラクタ===============
         internal PackageOptionalSettings()
@@ -43,6 +46,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             DocumentationURL = string.Empty;
             LicensesURL = string.Empty;
             UnityRelease = string.Empty;
+            HideInEditor = false;
             Keywords.Clear();
             Dependencies.Clear();
             SamplesInfo.Clear();

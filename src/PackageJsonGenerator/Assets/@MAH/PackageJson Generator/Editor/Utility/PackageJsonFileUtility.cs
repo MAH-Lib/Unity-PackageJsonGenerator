@@ -1,11 +1,11 @@
 #if UNITY_EDITOR
+using System;
 using System.IO;
 using System.Collections;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UnityEditor;
-using UnityEngine;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
 {
@@ -13,17 +13,33 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     {
         //====定数=======================
         private const string PACKGAGE_JSON_OUTPUT_FILE_NAME = "package.json";
-        private const string SAVE_ERORR_MESSAGE = "保存パスが指定されていません";
-        private const string LOAD_ERORR_MESSAGE = "指定したパスにファイルが存在しません";
+        private const string FOLDER_EMPTY_ERORR_MESSAGE = "フォルダーパスが指定されていません";
+        private const string FOLDER_NOT_FOUND_ERORR_MESSAGE = "フォルダが存在しません";
+        private const string FILE_NOT_FOUND_ERORR_MESSAGE = "指定したフォルダに package.json が存在しません";
+        private const string SAVE_ERORR_MESSAGE = "package.json を保存できませんでした";
+        private const string LOAD_ERORR_MESSAGE = "package.json を読み込めませんでした";
+
+        //====パス=======================
+        /// <summary> フォルダーパスから package.json のパス取得（"/" 区切り） </summary>
+        internal static string GetPackageJsonPath(string folder)
+        {
+            return Path.Combine(folder ?? string.Empty, PACKGAGE_JSON_OUTPUT_FILE_NAME).Replace('\\', '/');
+        }
 
         //====保存=======================
-        /// <summary> Package.json生成 </summary>
-        internal static void SavePackageJson(string path, PackageJsonInfo package_json_info)
+        /// <summary> Package.json生成（失敗した場合は例外を出さずに false とエラー文を返す） </summary>
+        internal static bool TrySavePackageJson(string folder, PackageJsonInfo package_json_info, out string error_message)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            error_message = string.Empty;
+            if (string.IsNullOrWhiteSpace(folder))
             {
-                Debug.Log(SAVE_ERORR_MESSAGE);
-                return;
+                error_message = FOLDER_EMPTY_ERORR_MESSAGE;
+                return false;
+            }
+            if (!Directory.Exists(folder))
+            {
+                error_message = $"{FOLDER_NOT_FOUND_ERORR_MESSAGE} : {folder}";
+                return false;
             }
 
             string json = JsonConvert.SerializeObject(package_json_info, new JsonSerializerSettings
@@ -32,25 +48,56 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 Formatting = Formatting.Indented
             });
 
-            string create_path = Path.Combine(path, PACKGAGE_JSON_OUTPUT_FILE_NAME);
-            File.WriteAllText(create_path, json);
+            try
+            {
+                File.WriteAllText(GetPackageJsonPath(folder), json);
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            {
+                error_message = $"{SAVE_ERORR_MESSAGE} : {exception.Message}";
+                return false;
+            }
             AssetDatabase.Refresh();
+            return true;
         }
 
         //====読み込み=======================
-        /// <summary> Package.json読み込み </summary>
-        internal static PackageJsonInfo LoadPackageJson(string path)
+        /// <summary> Package.json読み込み（失敗した場合は例外を出さずに false とエラー文を返す） </summary>
+        internal static bool TryLoadPackageJson(string folder, out PackageJsonInfo package_json_info, out string error_message)
         {
-            string full_path = Path.Combine(path, PACKGAGE_JSON_OUTPUT_FILE_NAME);
+            package_json_info = null;
+            error_message = string.Empty;
+            if (string.IsNullOrWhiteSpace(folder))
+            {
+                error_message = FOLDER_EMPTY_ERORR_MESSAGE;
+                return false;
+            }
 
+            string full_path = GetPackageJsonPath(folder);
             if (!File.Exists(full_path))
             {
-                Debug.Log($"{LOAD_ERORR_MESSAGE} : {full_path}");
-                return null;
+                error_message = $"{FILE_NOT_FOUND_ERORR_MESSAGE} : {full_path}";
+                return false;
             }
-            
-            string json = File.ReadAllText(full_path);
-            return JsonConvert.DeserializeObject<PackageJsonInfo>(json);
+
+            try
+            {
+                string json = File.ReadAllText(full_path);
+                package_json_info = JsonConvert.DeserializeObject<PackageJsonInfo>(json);
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException || exception is JsonException)
+            {
+                error_message = $"{LOAD_ERORR_MESSAGE} : {exception.Message}";
+                return false;
+            }
+
+            //空のファイルは null になる
+            if (package_json_info == null)
+            {
+                error_message = $"{LOAD_ERORR_MESSAGE} : {full_path}";
+                return false;
+            }
+            return true;
         }
     }
 

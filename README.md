@@ -72,7 +72,7 @@ Set the folder that contains the existing `package.json`, then click **Load pack
 | Required | Version (バージョン) | `version` | Major / Minor / Patch |
 | Required | Display name (UPM表示名) | `displayName` | Name shown in Package Manager |
 | Required | Description (概要) | `description` | |
-| Required | Unity version (対応 Unity バージョン設定) | `unity` | Minimum supported Unity version (e.g. `6000.0`) |
+| Required | Unity version (対応 Unity バージョン設定) | `unity` | Minimum supported Unity version (e.g. `6000.0`). Choose from Unity 5.0 to Unity 6.6 (`6000.6`) |
 | Required | License (ライセンス) | `license` | Choose from common SPDX licenses |
 | Required | Author (著者情報設定) | `author` | Name is required. E-mail and URL are optional |
 | Optional | Release version (リリースバージョン) | `unityRelease` | e.g. `0f1` |
@@ -80,17 +80,13 @@ Set the folder that contains the existing `package.json`, then click **Load pack
 | Optional | Changelog / Documentation / License URL | `changelogUrl` / `documentationUrl` / `licensesUrl` | Must start with `http://` or `https://` |
 | Optional | Keywords (キーワード) | `keywords` | |
 | Optional | Samples (サンプル) | `samples` | Path is converted to start with `Samples~` |
-| Optional | Dependencies (外部パッケージ) | `dependencies` | You can pick packages installed in your project |
+| Optional | Dependencies (外部パッケージ) | `dependencies` | Exact versions only (`X.Y.Z`), as required by Unity Package Manager. You can pick packages installed in your project |
 
 Empty optional fields are not written to the file.
 
 ## Known limitations
 
-- If a value fails validation (for example, an invalid package name, e-mail address or URL), it is discarded without any message and the previous value is kept.
-- **Create package.json** overwrites an existing file without asking.
-- The entered values are not saved. They are cleared when the window is reopened or scripts are recompiled.
-- Unity Package Manager only supports exact versions in `dependencies`. Do not use the comparison or range options (`>=`, `Range`, etc.).
-- Selecting **Other** as the license is not supported yet.
+- The entered values are kept when scripts are recompiled, but they are cleared when the window is closed.
 
 These will be addressed in future updates.
 

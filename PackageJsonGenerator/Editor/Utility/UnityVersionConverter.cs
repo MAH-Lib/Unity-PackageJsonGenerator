@@ -1,90 +1,90 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
 {
     internal static class UnityVersionConverter
     {
         //====定数===========================================
-        private static readonly Dictionary<MajorVersion, Type> MinorEnumTypeMap = new()
-        {
-            { MajorVersion.Unity_6, typeof(MinorVersion_6) },
-            { MajorVersion.Unity_2023, typeof(MinorVersion_2023) },
-            { MajorVersion.Unity_2022, typeof(MinorVersion_2022) },
-            { MajorVersion.Unity_2021, typeof(MinorVersion_2021) },
-            { MajorVersion.Unity_2020, typeof(MinorVersion_2020) },
-            { MajorVersion.Unity_2019, typeof(MinorVersion_2019) },
-            { MajorVersion.Unity_2018, typeof(MinorVersion_2018) },
-            { MajorVersion.Unity_2017, typeof(MinorVersion_2017) },
-            { MajorVersion.Unity_5,   typeof(MinorVersion_5) },
-        };
+        /// <summary> 対応Unityバージョンの初期値（Major） </summary>
+        internal const int DEFAULT_MAJOR_VERSION = 6000;
+        /// <summary> 対応Unityバージョンの初期値（Minor） </summary>
+        internal const int DEFAULT_MINOR_VERSION = 0;
 
-        private static readonly Dictionary<Type, MajorVersion> MajorEnumTypeMap = new()
-        {
-            { typeof(MinorVersion_6), MajorVersion.Unity_6 },
-            { typeof(MinorVersion_2023), MajorVersion.Unity_2023 },
-            { typeof(MinorVersion_2022), MajorVersion.Unity_2022},
-            { typeof(MinorVersion_2021), MajorVersion.Unity_2021},
-            { typeof(MinorVersion_2020), MajorVersion.Unity_2020},
-            { typeof(MinorVersion_2019), MajorVersion.Unity_2019},
-            { typeof(MinorVersion_2018), MajorVersion.Unity_2018},
-            { typeof(MinorVersion_2017), MajorVersion.Unity_2017},
-            { typeof(MinorVersion_5), MajorVersion.Unity_5},
-        };
+        /// <summary> 選択肢に並べる Major の一覧（新しい Major が出たらここに追加する） </summary>
+        private static readonly int[] MajorVersions = { 6000, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 5 };
 
-        internal static int DEFAULT_MINOR_VERSION = 1;
+        /// <summary> Major ごとの Minor の一覧（新しい Minor が出たらここに追加する） </summary>
+        private static readonly Dictionary<int, int[]> MinorVersionMap = new()
+        {
+            { 6000, new[] { 0, 1, 2, 3, 4, 5, 6 } },
+            { 2023, new[] { 1, 2, 3 } },
+            { 2022, new[] { 1, 2, 3 } },
+            { 2021, new[] { 1, 2, 3 } },
+            { 2020, new[] { 1, 2, 3 } },
+            { 2019, new[] { 1, 2, 3, 4 } },
+            { 2018, new[] { 1, 2, 3, 4 } },
+            { 2017, new[] { 1, 2, 3, 4 } },
+            { 5, new[] { 0, 1, 2, 3, 4, 5, 6 } },
+        };
 
         //====関数===========================================
-        /// <summary> メジャーバージョンに対応したマイナーバージョン取得 </summary>
-        internal static Type GetMinorVersionForMajorVersion(MajorVersion major)
+        /// <summary> Major の一覧取得 </summary>
+        internal static int[] GetMajorVersions()
         {
-            return MinorEnumTypeMap[major];
+            return MajorVersions;
         }
 
-        /// <summary> マイナーバージョンに対応したメジャーバージョン取得 </summary>
-        internal static MajorVersion GetMajorVersionForMinorVersion(Type minor)
+        /// <summary> Major に対応した Minor の一覧取得（一覧に無い Major は空） </summary>
+        internal static int[] GetMinorVersions(int major)
         {
-            return MajorEnumTypeMap[minor];
+            return MinorVersionMap.TryGetValue(major, out int[] minors) ? minors : Array.Empty<int>();
         }
 
-        /// <summary> メジャーバージョン文字列取得 </summary>
-        internal static string MajorVersionToString(MajorVersion major)
+        /// <summary> 一覧にあるバージョンか判定 </summary>
+        internal static bool IsKnownVersion(int major, int minor)
         {
-            return major switch
+            return GetMinorVersions(major).Contains(minor);
+        }
+
+        /// <summary> Major の表示名取得 </summary>
+        internal static string GetMajorVersionLabel(int major)
+        {
+            return major == 6000 ? "6000 (Unity 6)" : major.ToString();
+        }
+
+        /// <summary> "Major.Minor" 形式の文字列を解析（読めない場合は初期値を入れて false） </summary>
+        internal static bool TryParseUnityVersion(string unity, out int major, out int minor, out bool has_minor)
+        {
+            major = DEFAULT_MAJOR_VERSION;
+            minor = DEFAULT_MINOR_VERSION;
+            has_minor = false;
+
+            if (string.IsNullOrWhiteSpace(unity))
+                return false;
+
+            string[] unity_str = unity.Trim().Split('.');
+            if (!int.TryParse(unity_str[0], out int parse_major))
+                return false;
+
+            //Minor が無い場合は、その Major の一覧の先頭を使う
+            if (unity_str.Length < 2)
             {
-                MajorVersion.Unity_6 => "6000",
-                MajorVersion.Unity_2023 => "2023",
-                MajorVersion.Unity_2022 => "2022",
-                MajorVersion.Unity_2021 => "2021",
-                MajorVersion.Unity_2020 => "2020",
-                MajorVersion.Unity_2019 => "2019",
-                MajorVersion.Unity_2018 => "2018",
-                MajorVersion.Unity_2017 => "2017",
-                MajorVersion.Unity_5 => "5",
-                _ => throw new NotImplementedException(),
-            };
-        }
+                int[] minors = GetMinorVersions(parse_major);
+                major = parse_major;
+                minor = minors.Any() ? minors[0] : 0;
+                return true;
+            }
 
-        /// <summary> メジャーバージョン文字列取得 </summary>
-        internal static MajorVersion StringToMajorVersion(string major)
-        {
-            if (string.IsNullOrWhiteSpace(major))
-                throw new NotImplementedException();
+            if (!int.TryParse(unity_str[1], out int parse_minor))
+                return false;
 
-            return major switch
-            {
-                "6000" => MajorVersion.Unity_6,
-                "2023" => MajorVersion.Unity_2023,
-                "2022" => MajorVersion.Unity_2022,
-                "2021" => MajorVersion.Unity_2021,
-                "2020" => MajorVersion.Unity_2020,
-                "2019" => MajorVersion.Unity_2019,
-                "2018" => MajorVersion.Unity_2018,
-                "2017" => MajorVersion.Unity_2017,
-                "5" => MajorVersion.Unity_5,
-                _ => throw new NotImplementedException(),
-            };
+            major = parse_major;
+            minor = parse_minor;
+            has_minor = true;
+            return true;
         }
     }
 }
