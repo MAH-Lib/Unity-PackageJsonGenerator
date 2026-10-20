@@ -31,7 +31,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         internal static void LoadPackageInfo()
         {
             UnityEditor.PackageManager.PackageInfo[] package_info = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
-            _packageNames = package_info.Select(info => info.name).Prepend("– Select Package –").ToArray();
+            _packageNames = package_info.Select(info => info.name).Prepend(string.Empty).ToArray();
             _packageVersions = package_info.Select(info => info.version).Prepend("0.0.0").ToArray();
             _isLoaded = true;
         }

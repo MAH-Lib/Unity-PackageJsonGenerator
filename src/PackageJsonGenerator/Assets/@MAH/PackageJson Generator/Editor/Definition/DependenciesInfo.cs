@@ -17,6 +17,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         [FormerlySerializedAs("PacckageName")] public string PackageName;
         /// <summary> バージョン </summary>
         public Vector3Int Version;
+        /// <summary> バージョンのプレリリースの表記（例 pre.3。空ならプレリリースではない） </summary>
+        public string PreRelease;
         /// <summary> パッケージ選択配列番号 </summary>
         public int SelectPackageIndex;
 
@@ -25,6 +27,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         {
             PackageName = PACKAGE_DEFAULT_NAME;
             Version = Vector3Int.zero;
+            PreRelease = string.Empty;
             SelectPackageIndex = 0;
         }
 
@@ -34,6 +37,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         {
             PackageName = PACKAGE_DEFAULT_NAME;
             Version = Vector3Int.zero;
+            PreRelease = string.Empty;
             SelectPackageIndex = 0;
         }
     }

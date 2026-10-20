@@ -11,9 +11,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal class DependenciesDrawer
     {
         //====定数======================================
-        private const string PACKAGE_INFO_DEPENDENCIES_LABEL = "外部パッケージ情報設定";
-        private const string PACKAGE_INFO_DEPENDENCIES_LIST_LABEL = "外部パッケージ一覧";
-        private const string PACKAGE_INFO_DEPENDENCIES_INPUT_LABEL = "外部パッケージ";
+        //入力エラーの辞書のキー（行のオブジェクトと組にして使う）
+        private const string FIELD_KEY_PRE_RELEASE = "PreRelease";
 
         //====変数======================================
         [SerializeField] private bool _isShowDependencies = true;
@@ -22,7 +21,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         /// <summary> 外部パッケージの描画 </summary>
         internal void Draw(PackageOptionalSettings settings, FieldErrorStore field_errors, GUILayoutOption label_layout, GUILayoutOption button_layout)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_DEPENDENCIES_LABEL, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.DependenciesSection), EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             //外部パッケージ情報
             using (new EditorGUILayout.HorizontalScope())
@@ -31,10 +30,10 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(PACKAGE_INFO_DEPENDENCIES_INPUT_LABEL, label_layout);
-                        EditorGUILayout.LabelField(DrawerUtility.LIST_EMPTY_LABEL, GUILayout.ExpandWidth(true));
+                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.Dependency), label_layout);
+                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.ListEmpty), GUILayout.ExpandWidth(true));
                         GUILayout.FlexibleSpace();
-                        if (GUILayout.Button(DrawerUtility.LIST_ADD_BUTTON, button_layout))
+                        if (GUILayout.Button(LocalizedText.Get(TextId.ListAddButton), button_layout))
                         {
                             settings.Dependencies.Add(new());
                         }
@@ -44,7 +43,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 {
                     using (new EditorGUILayout.VerticalScope())
                     {
-                        _isShowDependencies = EditorGUILayout.Foldout(_isShowDependencies, PACKAGE_INFO_DEPENDENCIES_LIST_LABEL);
+                        _isShowDependencies = EditorGUILayout.Foldout(_isShowDependencies, LocalizedText.Get(TextId.DependenciesList));
                         if (_isShowDependencies)
                         {
                             GUILayoutOption dependencies_layout = GUILayout.MaxWidth(DrawerUtility.INFO_LABEL_LOW_INCIDENT_SIZE);
@@ -56,6 +55,10 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
 
                             string[] package_names = UnityPackageHelper.AccPackageNames;
                             string[] package_versions = UnityPackageHelper.AccPackageVersions;
+                            //先頭の「選択なし」の項目は、今の表示言語の文言にする
+                            string[] package_popup_names = (string[])package_names.Clone();
+                            if (package_popup_names.Length > 0)
+                                package_popup_names[0] = LocalizedText.Get(TextId.SelectPackage);
 
                             foreach (DependenciesInfo dependencies in settings.Dependencies)
                             {
@@ -64,7 +67,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                     //パッケージ名
                                     using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_NAME_LABEL, dependencies_layout);
+                                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.PackageName), dependencies_layout);
                                         //確定時のみ検証するため DelayedTextField を使う（1文字ずつ検証すると "." を入力できない）
                                         string name = EditorGUILayout.DelayedTextField(dependencies.PackageName, GUILayout.ExpandWidth(true));
                                         name = name.ToLowerInvariant();
@@ -81,12 +84,12 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                                 field_errors.Clear(dependencies);
                                             }
                                             else
-                                                field_errors.Set(dependencies, string.Format(DrawerUtility.PACKAGE_NAME_ERROR_MESSAGE, name));
+                                                field_errors.Set(dependencies, LocalizedText.Format(TextId.PackageNameError, name));
                                             dependencies.SelectPackageIndex = PackageSettingsConverter.FindPackageIndex(dependencies.PackageName);
                                         }
 
                                         EditorGUI.BeginDisabledGroup(!UnityPackageHelper.AccIsLoaded);
-                                        int index = EditorGUILayout.Popup(dependencies.SelectPackageIndex, package_names, package_popup_layout);
+                                        int index = EditorGUILayout.Popup(dependencies.SelectPackageIndex, package_popup_names, package_popup_layout);
                                         EditorGUI.EndDisabledGroup();
 
                                         if (dependencies.SelectPackageIndex != index)
@@ -100,21 +103,23 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                     //パッケージバージョン（UPM は完全一致のバージョンのみ対応）
                                     using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_VERSION_LABEL, dependencies_layout);
-                                        DrawerUtility.DrawVersionFields(ref dependencies.Version, version_layout, version_input_layout);
+                                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.Version), dependencies_layout);
+                                        DrawerUtility.DrawVersionFields(ref dependencies.Version, ref dependencies.PreRelease, field_errors, GetPreReleaseKey(dependencies), version_layout, version_input_layout);
                                     }
+                                    field_errors.Draw(GetPreReleaseKey(dependencies));
                                 }
                             }
                             using (new EditorGUILayout.HorizontalScope())
                             {
                                 GUILayout.FlexibleSpace();
-                                if (GUILayout.Button(DrawerUtility.LIST_REMOVE_BUTTON, button_layout))
+                                if (GUILayout.Button(LocalizedText.Get(TextId.ListRemoveButton), button_layout))
                                 {
                                     int count = settings.Dependencies.Count;
                                     field_errors.Clear(settings.Dependencies[count - 1]);
+                                    field_errors.Clear(GetPreReleaseKey(settings.Dependencies[count - 1]));
                                     settings.Dependencies.RemoveAt(--count);
                                 }
-                                if (GUILayout.Button(DrawerUtility.LIST_ADD_BUTTON, button_layout))
+                                if (GUILayout.Button(LocalizedText.Get(TextId.ListAddButton), button_layout))
                                 {
                                     settings.Dependencies.Add(new());
                                 }
@@ -142,10 +147,16 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
 
             if (!PackageJsonValidator.IsValidPackageName(name))
                 return;
-            if (!PackageSettingsConverter.TryConvertToVersionVector(package_versions[index], out info.Version))
-                Debug.LogWarning($"外部パッケージ {name} のバージョン \"{package_versions[index]}\" を {PackageSettingsConverter.ConvertToVersionString(info.Version)} として設定しました");
+            if (!PackageSettingsConverter.TryConvertToVersionVector(package_versions[index], out info.Version, out info.PreRelease))
+                Debug.LogWarning(LocalizedText.Format(TextId.DependencyVersionSetWarning, name, package_versions[index], PackageSettingsConverter.ConvertToVersionString(info.Version, info.PreRelease)));
             info.PackageName = name;
             info.SelectPackageIndex = index;
+        }
+
+        /// <summary> 行のプレリリースの表記の入力エラーのキー取得（名前の入力エラーのキー＝行のオブジェクトと区別する） </summary>
+        private static object GetPreReleaseKey(DependenciesInfo info)
+        {
+            return (info, FIELD_KEY_PRE_RELEASE);
         }
     }
 }

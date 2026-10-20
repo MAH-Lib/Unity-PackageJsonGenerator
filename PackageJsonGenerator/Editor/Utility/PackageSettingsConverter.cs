@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
@@ -11,7 +13,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal static class PackageSettingsConverter
     {
         //====定数=========================================
-        private static readonly Regex VersionVectorRegex = new(@"^(\d+)(?:\.(\d+))?(?:\.(\d+))?(.*)$", RegexOptions.Compiled);
+        //Major.Minor.Patch とプレリリースの表記（"-" の後ろ）を読む。残り（"+build" など）は 5 番目のグループに入る
+        private static readonly Regex VersionVectorRegex = new(@"^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([0-9A-Za-z.\-]+))?(.*)$", RegexOptions.Compiled);
 
         //====入力状態 → JSON================================
         /// <summary> 入力状態から PackageJsonInfo に変換 </summary>
@@ -20,7 +23,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             PackageJsonInfo info = new()
             {
                 Name = required_settings.Name,
-                Version = ConvertToVersionString(required_settings.Version),
+                Version = ConvertToVersionString(required_settings.Version, required_settings.PreRelease),
                 Description = required_settings.Description,
                 DisplayName = required_settings.DisplayName,
                 Unity = ConvertToUnityVersionString(required_settings.MajorVer, required_settings.MinorVer),
@@ -33,7 +36,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 Author = required_settings.AuthorInfo,
                 Keywords = optional_settings.Keywords != null && optional_settings.Keywords.Any() ? optional_settings.Keywords : null,
                 Dependencies = ConvertToDependencies(optional_settings.Dependencies, warnings),
-                Samples = optional_settings.SamplesInfo != null && optional_settings.SamplesInfo.Any() ? optional_settings.SamplesInfo : null
+                Samples = optional_settings.SamplesInfo != null && optional_settings.SamplesInfo.Any() ? optional_settings.SamplesInfo : null,
+                ExtraData = ConvertToExtraData(optional_settings.ExtraJson),
             };
             return info;
         }
@@ -45,9 +49,9 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             //不正な名前でも読み込んだ値は残し、警告だけ出す（生成前チェックで止める）
             required_settings.Name = (package_json_info.Name ?? string.Empty).ToLowerInvariant();
             if (!PackageJsonValidator.IsValidPackageName(required_settings.Name))
-                warnings.Add($"読み込んだパッケージ名の形式が正しくありません : {required_settings.Name}");
-            if (!TryConvertToVersionVector(package_json_info.Version, out required_settings.Version))
-                warnings.Add($"version の値 \"{package_json_info.Version}\" を {ConvertToVersionString(required_settings.Version)} として読み込みました");
+                warnings.Add(LocalizedText.Format(TextId.LoadedPackageNameInvalidWarning, required_settings.Name));
+            if (!TryConvertToVersionVector(package_json_info.Version, out required_settings.Version, out required_settings.PreRelease))
+                warnings.Add(LocalizedText.Format(TextId.VersionConvertedWarning, package_json_info.Version, ConvertToVersionString(required_settings.Version, required_settings.PreRelease)));
             required_settings.Description = package_json_info.Description ?? string.Empty;
             required_settings.DisplayName = package_json_info.DisplayName ?? string.Empty;
             required_settings.License = package_json_info.License ?? string.Empty;
@@ -61,6 +65,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             optional_settings.HideInEditor = package_json_info.HideInEditor;
             optional_settings.Keywords = package_json_info.Keywords ?? new();
             optional_settings.Dependencies = ConvertToDependenciesInfo(package_json_info.Dependencies, warnings);
+            optional_settings.ExtraJson = ConvertToExtraJson(package_json_info.ExtraData);
             optional_settings.SamplesInfo = package_json_info.Samples ?? new();
             //以前のバージョンが Windows で出力した "\" 区切りのパスを "/" 区切りに読み替える
             foreach (SampleInfo sample in optional_settings.SamplesInfo)
@@ -77,10 +82,18 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             return $"{version_vec.x}.{version_vec.y}.{version_vec.z}";
         }
 
-        /// <summary> バージョン文字列を変換（要素の不足・余り・プレビュー表記・数値以外を補った場合は false） </summary>
-        internal static bool TryConvertToVersionVector(string version, out Vector3Int result)
+        /// <summary> バージョンを "X.Y.Z" または "X.Y.Z-表記" 形式の文字列に変換（表記が空ならプレリリースではない） </summary>
+        internal static string ConvertToVersionString(Vector3Int version_vec, string pre_release)
+        {
+            string version = ConvertToVersionString(version_vec);
+            return string.IsNullOrEmpty(pre_release) ? version : $"{version}-{pre_release}";
+        }
+
+        /// <summary> バージョン文字列を変換（要素の不足・余り・不正なプレリリースの表記・ビルドメタデータ・数値以外を補った場合は false） </summary>
+        internal static bool TryConvertToVersionVector(string version, out Vector3Int result, out string pre_release)
         {
             result = Vector3Int.zero;
+            pre_release = string.Empty;
             if (string.IsNullOrWhiteSpace(version))
                 return false;
 
@@ -88,7 +101,6 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             if (!match.Success)
                 return false;
 
-            bool is_exact = match.Groups[2].Success && match.Groups[3].Success && string.IsNullOrEmpty(match.Groups[4].Value);
             for (int index = 0; index < 3; index++)
             {
                 Group group = match.Groups[index + 1];
@@ -102,7 +114,13 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 }
                 result[index] = parse;
             }
-            return is_exact;
+
+            //SemVer の規則に合わないプレリリースの表記は読み捨てる
+            bool is_valid_pre_release = !match.Groups[4].Success || PackageJsonValidator.IsValidPreRelease(match.Groups[4].Value);
+            if (match.Groups[4].Success && is_valid_pre_release)
+                pre_release = match.Groups[4].Value;
+
+            return match.Groups[2].Success && match.Groups[3].Success && is_valid_pre_release && string.IsNullOrEmpty(match.Groups[5].Value);
         }
 
         /// <summary> 対応Unityバージョンを "Major.Minor" 形式の文字列に変換 </summary>
@@ -116,16 +134,16 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         {
             if (!UnityVersionConverter.TryParseUnityVersion(unity, out major, out minor, out bool has_minor))
             {
-                warnings.Add($"unity の値 \"{unity}\" を読み込めないため {major}.{minor} にしました");
+                warnings.Add(LocalizedText.Format(TextId.UnityVersionUnreadableWarning, unity, ConvertToUnityVersionString(major, minor)));
                 return;
             }
             if (!has_minor)
             {
-                warnings.Add($"unity の値 \"{unity}\" に Minor が無いため {major}.{minor} にしました");
+                warnings.Add(LocalizedText.Format(TextId.UnityVersionNoMinorWarning, unity, ConvertToUnityVersionString(major, minor)));
                 return;
             }
             if (!UnityVersionConverter.IsKnownVersion(major, minor))
-                warnings.Add($"unity の値 \"{unity}\" は一覧に無いバージョンです。そのまま使います");
+                warnings.Add(LocalizedText.Format(TextId.UnityVersionUnlistedWarning, unity));
         }
 
         //====外部パッケージ===================================
@@ -143,12 +161,12 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 //初期値 "com." のままの行や不正な名前の行は出力しない
                 if (!PackageJsonValidator.IsValidPackageName(info.PackageName))
                 {
-                    warnings.Add($"外部パッケージ名が正しくないため出力しません : {info.PackageName}");
+                    warnings.Add(LocalizedText.Format(TextId.DependencyNameInvalidWarning, info.PackageName));
                     continue;
                 }
 
                 //UPM は完全一致のバージョンのみ対応（重複は生成前チェックで止めているが、念のため例外を出さない）
-                dependencies.TryAdd(info.PackageName, ConvertToVersionString(info.Version));
+                dependencies.TryAdd(info.PackageName, ConvertToVersionString(info.Version, info.PreRelease));
             }
             return dependencies.Any() ? dependencies : null;
         }
@@ -168,18 +186,23 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
 
                 if (!VersionOperatorConverter.TryExtractVersion(key_value_pair.Value, out string version, out bool is_converted))
                 {
-                    warnings.Add($"外部パッケージ {key_value_pair.Key} のバージョン \"{key_value_pair.Value}\" を読み込めないため除外しました");
+                    warnings.Add(LocalizedText.Format(TextId.DependencyVersionUnreadableWarning, key_value_pair.Key, key_value_pair.Value));
                     continue;
                 }
+                //TryExtractVersion は "X.Y.Z" または "X.Y.Z-表記" を返す。表記が SemVer の規則に合わない場合は読み捨てて変換扱いにする
+                if (!TryConvertToVersionVector(version, out Vector3Int version_vec, out string pre_release))
+                {
+                    version = ConvertToVersionString(version_vec, pre_release);
+                    is_converted = true;
+                }
                 if (is_converted)
-                    warnings.Add($"外部パッケージ {key_value_pair.Key} のバージョン \"{key_value_pair.Value}\" を \"{version}\" に変換しました（UPM は完全一致のバージョンのみ対応）");
+                    warnings.Add(LocalizedText.Format(TextId.DependencyVersionConvertedWarning, key_value_pair.Key, key_value_pair.Value, version));
 
-                //TryExtractVersion が "X.Y.Z" 形式を返すので、ここでは補完が起きない
-                TryConvertToVersionVector(version, out Vector3Int version_vec);
                 DependenciesInfo info = new()
                 {
                     PackageName = key_value_pair.Key,
                     Version = version_vec,
+                    PreRelease = pre_release,
                     SelectPackageIndex = FindPackageIndex(key_value_pair.Key),
                 };
 
@@ -187,6 +210,37 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             }
 
             return dependencies_infos;
+        }
+
+        //====未対応キー===================================
+        /// <summary> 読み込んだ未対応キーを JSON オブジェクトの文字列に変換（無ければ空文字） </summary>
+        internal static string ConvertToExtraJson(IDictionary<string, JToken> extra_data)
+        {
+            if (extra_data == null || !extra_data.Any())
+                return string.Empty;
+            return JsonConvert.SerializeObject(extra_data);
+        }
+
+        /// <summary> 未対応キーの JSON オブジェクトの文字列を、出力用の辞書に戻す（空や読めない場合は null） </summary>
+        internal static IDictionary<string, JToken> ConvertToExtraData(string extra_json)
+        {
+            if (string.IsNullOrWhiteSpace(extra_json))
+                return null;
+            try
+            {
+                return JsonConvert.DeserializeObject<Dictionary<string, JToken>>(extra_json);
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary> 未対応キーの名前の一覧取得（画面の表示用） </summary>
+        internal static string[] GetExtraKeys(string extra_json)
+        {
+            IDictionary<string, JToken> extra_data = ConvertToExtraData(extra_json);
+            return extra_data == null ? Array.Empty<string>() : extra_data.Keys.ToArray();
         }
 
         /// <summary> 登録済みパッケージ一覧から名前の選択配列番号を探す（見つからなければ 0） </summary>

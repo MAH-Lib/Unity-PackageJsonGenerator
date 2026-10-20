@@ -16,6 +16,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         [SerializeField] internal string Name;
         /// <summary> パッケージバージョン </summary>
         [SerializeField] internal Vector3Int Version;
+        /// <summary> パッケージバージョンのプレリリースの表記（例 preview.1。空ならプレリリースではない） </summary>
+        [SerializeField] internal string PreRelease;
         /// <summary> パッケージ概要 </summary>
         [SerializeField] internal string Description;
         /// <summary> パッケージ表示名 </summary>
@@ -34,6 +36,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         {
             Name = PACKAGE_DEFAULT_NAME;
             Version = Vector3Int.zero;
+            PreRelease = string.Empty;
             Description = string.Empty;
             DisplayName = string.Empty;
             MajorVer = UnityVersionConverter.DEFAULT_MAJOR_VERSION;
@@ -48,6 +51,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         {
             Name = PACKAGE_DEFAULT_NAME;
             Version = Vector3Int.zero;
+            PreRelease = string.Empty;
             Description = string.Empty;
             DisplayName = string.Empty;
             MajorVer = UnityVersionConverter.DEFAULT_MAJOR_VERSION;

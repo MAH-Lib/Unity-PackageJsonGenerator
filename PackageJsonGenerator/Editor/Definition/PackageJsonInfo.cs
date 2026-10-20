@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
 {
@@ -36,6 +37,9 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         public Dictionary<string, string> Dependencies;
         [JsonProperty("samples")]
         public List<SampleInfo> Samples;
+        /// <summary> このツールが扱わないキー（type、repository など）。読み込んだ値をそのまま書き戻す </summary>
+        [JsonExtensionData]
+        public IDictionary<string, JToken> ExtraData;
     }
 }
 #endif

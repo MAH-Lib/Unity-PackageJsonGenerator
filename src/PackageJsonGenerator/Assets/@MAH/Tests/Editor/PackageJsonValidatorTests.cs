@@ -1,10 +1,37 @@
 #if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
 {
+    //英語・日本語の両方の表示言語で実行する（引数は LanguageType の値。LanguageType は internal のため int で受け取る）
+    [TestFixture(0)]
+    [TestFixture(1)]
     public class PackageJsonValidatorTests
     {
+        //====変数======================================
+        private readonly int _language;
+
+        //====準備・後片付け==================================
+        public PackageJsonValidatorTests(int language)
+        {
+            _language = language;
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            LocalizedText.OverrideLanguage((LanguageType)_language);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            LocalizedText.OverrideLanguage(null);
+        }
+
         //====入力判定======================================
         [TestCase("com.example.tool", true)]
         [TestCase("com.a", true)]
@@ -44,6 +71,24 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
             Assert.AreEqual(expected, PackageJsonValidator.IsValidURL(url));
         }
 
+        [TestCase("", true)]
+        [TestCase(null, true)]
+        [TestCase("preview.1", true)]
+        [TestCase("exp.2", true)]
+        [TestCase("pre", true)]
+        [TestCase("rc-1.0", true)]
+        [TestCase("0", true)]
+        [TestCase("01", false)]
+        [TestCase("pre.01", false)]
+        [TestCase("pre..1", false)]
+        [TestCase(".pre", false)]
+        [TestCase("pre_1", false)]
+        [TestCase("pre 1", false)]
+        public void IsValidPreRelease(string pre_release, bool expected)
+        {
+            Assert.AreEqual(expected, PackageJsonValidator.IsValidPreRelease(pre_release));
+        }
+
         [TestCase("C:/Proj/Assets/MyPkg/Samples/Basic", true, "Samples~/Basic")]
         [TestCase(@"C:\Proj\Packages\MyPkg\Samples~\Basic\Scene", true, "Samples~/Basic/Scene")]
         [TestCase("Samples~/Basic", true, "Samples~/Basic")]
@@ -72,13 +117,15 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
             Assert.IsEmpty(error_message);
         }
 
-        [TestCase("Name", "パッケージ名が入力されていません")]
-        [TestCase("Description", "パッケージ概要が入力されていません")]
-        [TestCase("DisplayName", "UPM表示名が入力されていません")]
-        [TestCase("License", "ライセンスが入力されていません")]
-        [TestCase("AuthorName", "著者名が入力されていません")]
-        public void CanCreatePackageJson_EmptyField(string field, string expected_message)
+        //期待するメッセージは TextId の名前で指定する（TextId は internal のため文字列で受け取る）
+        [TestCase("Name", nameof(TextId.PackageNameEmptyError))]
+        [TestCase("Description", nameof(TextId.DescriptionEmptyError))]
+        [TestCase("DisplayName", nameof(TextId.DisplayNameEmptyError))]
+        [TestCase("License", nameof(TextId.LicenseEmptyError))]
+        [TestCase("AuthorName", nameof(TextId.AuthorNameEmptyError))]
+        public void CanCreatePackageJson_EmptyField(string field, string expected_text_id)
         {
+            string expected_message = LocalizedText.Get((TextId)Enum.Parse(typeof(TextId), expected_text_id));
             CreateValidSettings(out PackageRequiredSettings required_settings, out PackageOptionalSettings optional_settings);
             switch (field)
             {
@@ -100,7 +147,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
             required_settings.Name = "my package";
 
             Assert.IsFalse(PackageJsonValidator.CanCreatePackageJson(required_settings, optional_settings, out string error_message));
-            Assert.AreEqual("パッケージ名の形式が正しくありません : my package", error_message);
+            Assert.AreEqual(LocalizedText.Format(TextId.PackageNameInvalidError, "my package"), error_message);
         }
 
         [Test]
@@ -114,7 +161,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
             optional_settings.Dependencies.Add(new());
 
             Assert.IsFalse(PackageJsonValidator.CanCreatePackageJson(required_settings, optional_settings, out string error_message));
-            Assert.AreEqual("外部パッケージ名が重複しています : com.example.dep", error_message);
+            Assert.AreEqual(LocalizedText.Format(TextId.DependenciesDuplicateError, "com.example.dep"), error_message);
         }
 
         [Test]
@@ -125,6 +172,47 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
             optional_settings.Dependencies.Add(new());
 
             Assert.IsTrue(PackageJsonValidator.CanCreatePackageJson(required_settings, optional_settings, out _));
+        }
+
+        //====Create 前の確認==================================
+        [Test]
+        public void GetCreateWarnings_SampleFolder()
+        {
+            string folder = Path.Combine(Path.GetTempPath(), $"PackageJsonGeneratorTests_{Guid.NewGuid():N}");
+            try
+            {
+                Directory.CreateDirectory(Path.Combine(folder, "Samples~", "Basic"));
+                Directory.CreateDirectory(Path.Combine(folder, "Samples", "Development"));
+                PackageOptionalSettings optional_settings = new();
+                optional_settings.SamplesInfo.Add(new() { Path = "Samples~/Basic" });
+                optional_settings.SamplesInfo.Add(new() { Path = "Samples~/Development" });
+                optional_settings.SamplesInfo.Add(new() { Path = "Samples~/Missing" });
+
+                List<string> warnings = PackageJsonValidator.GetCreateWarnings(optional_settings, folder);
+
+                //Samples~/Basic はあり、Samples~/Development は Samples/Development にあるので警告しない
+                CollectionAssert.AreEqual(new[] { LocalizedText.Format(TextId.SampleFolderNotFoundWarning, "Samples~/Missing") }, warnings);
+            }
+            finally
+            {
+                if (Directory.Exists(folder))
+                    Directory.Delete(folder, true);
+            }
+        }
+
+        [TestCase("", 0)]
+        [TestCase("0f1", 0)]
+        [TestCase("26f1", 0)]
+        [TestCase("0b5", 0)]
+        [TestCase(" 3p2 ", 0)]
+        [TestCase("f1", 1)]
+        [TestCase("0.1", 1)]
+        [TestCase("26f1c1", 1)]
+        public void GetCreateWarnings_UnityRelease(string unity_release, int expected_warning_count)
+        {
+            PackageOptionalSettings optional_settings = new() { UnityRelease = unity_release };
+
+            Assert.AreEqual(expected_warning_count, PackageJsonValidator.GetCreateWarnings(optional_settings, Path.GetTempPath()).Count);
         }
 
         //====テスト用データ==================================

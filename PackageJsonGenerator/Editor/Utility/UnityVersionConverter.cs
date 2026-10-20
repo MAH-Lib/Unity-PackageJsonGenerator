@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
 {
@@ -12,6 +13,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         internal const int DEFAULT_MAJOR_VERSION = 6000;
         /// <summary> 対応Unityバージョンの初期値（Minor） </summary>
         internal const int DEFAULT_MINOR_VERSION = 0;
+
+        private static readonly Regex EditorVersionRegex = new(@"^(\d+)\.(\d+)\.(\d+[a-z]\d+)", RegexOptions.Compiled);
 
         /// <summary> 選択肢に並べる Major の一覧（新しい Major が出たらここに追加する） </summary>
         private static readonly int[] MajorVersions = { 6000, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 5 };
@@ -84,6 +87,26 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             major = parse_major;
             minor = parse_minor;
             has_minor = true;
+            return true;
+        }
+
+        /// <summary> Editor のバージョン文字列（Application.unityVersion。例 6000.3.26f1）を unity と unityRelease に分ける（読めない場合は false） </summary>
+        internal static bool TryParseEditorVersion(string unity_version, out int major, out int minor, out string release)
+        {
+            major = DEFAULT_MAJOR_VERSION;
+            minor = DEFAULT_MINOR_VERSION;
+            release = string.Empty;
+            if (string.IsNullOrWhiteSpace(unity_version))
+                return false;
+
+            //"Major.Minor.<更新番号><種類><番号>"。中国版の後ろの "c1" などは unityRelease に含めない
+            Match match = EditorVersionRegex.Match(unity_version.Trim());
+            if (!match.Success || !int.TryParse(match.Groups[1].Value, out int parse_major) || !int.TryParse(match.Groups[2].Value, out int parse_minor))
+                return false;
+
+            major = parse_major;
+            minor = parse_minor;
+            release = match.Groups[3].Value;
             return true;
         }
     }

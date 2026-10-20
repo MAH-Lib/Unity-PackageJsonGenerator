@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -14,14 +15,10 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         /// <summary> サンプルのフォルダ名（パッケージ内で使う名前。Unity がインポートしない） </summary>
         internal const string PACKAGE_INFO_SAMPLE_KEYWORD_2 = "Samples~";
 
-        private const string PACKAGE_NAME_EMPTY_ERROR_MESSAGE = "パッケージ名が入力されていません";
-        private const string PACKAGE_NAME_INVALID_ERROR_MESSAGE = "パッケージ名の形式が正しくありません";
-        private const string DESCRIPTION_EMPTY_ERROR_MESSAGE = "パッケージ概要が入力されていません";
-        private const string DISPLAY_NAME_EMPTY_ERROR_MESSAGE = "UPM表示名が入力されていません";
-        private const string LICENSE_EMPTY_ERROR_MESSAGE = "ライセンスが入力されていません";
-        private const string AUTHOR_NAME_EMPTY_ERROR_MESSAGE = "著者名が入力されていません";
-        private const string DEPENDENCIES_DUPLICATE_ERROR_MESSAGE = "外部パッケージ名が重複しています";
-
+        //SemVer 2.0.0 のプレリリースの表記（"." で区切った各部分が英数字とハイフン。数字だけの部分は先頭が 0 でない）
+        private static readonly Regex PreReleaseRegex = new(@"^(0|[1-9]\d*|\d*[A-Za-z\-][0-9A-Za-z\-]*)(\.(0|[1-9]\d*|\d*[A-Za-z\-][0-9A-Za-z\-]*))*$", RegexOptions.Compiled);
+        //unityRelease（<更新番号><種類 a/b/f/p など 1 字><番号>。例 0f1、26f1、0b5）
+        private static readonly Regex UnityReleaseRegex = new(@"^\d+[a-z]\d+$", RegexOptions.Compiled);
         private static readonly Regex PackageNameRegex = new(@"^[a-z0-9\-]+(\.[a-z0-9\-]+)+$", RegexOptions.Compiled);
         private static readonly Regex PackageEmailRegex = new(@"^[^@\s]+@[^@\s\.]+\.[^@\s\.]+(\.[^@\s\.]+)*$", RegexOptions.Compiled);
         private static readonly Regex PackageURLRegex = new(@"^https?:\/\/[\w\-]+(\.[\w\-]+)+([\/\w\-.~:?#[\]@!$&'()*+,;=]*)?$", RegexOptions.Compiled);
@@ -54,6 +51,15 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             return PackageURLRegex.IsMatch(url);
         }
 
+        /// <summary> プレリリースの表記の判定（空は「プレリリースではない」として true） </summary>
+        internal static bool IsValidPreRelease(string pre_release)
+        {
+            if (string.IsNullOrEmpty(pre_release))
+                return true;
+
+            return PreReleaseRegex.IsMatch(pre_release);
+        }
+
         /// <summary> サンプルのパスを "Samples~/..." 形式に変換（変換できない場合は false） </summary>
         internal static bool IsValidSampleFolderPath(string path, out string sample_path)
         {
@@ -82,32 +88,32 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
 
             if (string.IsNullOrWhiteSpace(required_settings.Name))
             {
-                error_message = PACKAGE_NAME_EMPTY_ERROR_MESSAGE;
+                error_message = LocalizedText.Get(TextId.PackageNameEmptyError);
                 return false;
             }
             if (!IsValidPackageName(required_settings.Name))
             {
-                error_message = $"{PACKAGE_NAME_INVALID_ERROR_MESSAGE} : {required_settings.Name}";
+                error_message = LocalizedText.Format(TextId.PackageNameInvalidError, required_settings.Name);
                 return false;
             }
             if (string.IsNullOrWhiteSpace(required_settings.Description))
             {
-                error_message = DESCRIPTION_EMPTY_ERROR_MESSAGE;
+                error_message = LocalizedText.Get(TextId.DescriptionEmptyError);
                 return false;
             }
             if (string.IsNullOrWhiteSpace(required_settings.DisplayName))
             {
-                error_message = DISPLAY_NAME_EMPTY_ERROR_MESSAGE;
+                error_message = LocalizedText.Get(TextId.DisplayNameEmptyError);
                 return false;
             }
             if (string.IsNullOrWhiteSpace(required_settings.License))
             {
-                error_message = LICENSE_EMPTY_ERROR_MESSAGE;
+                error_message = LocalizedText.Get(TextId.LicenseEmptyError);
                 return false;
             }
             if (required_settings.AuthorInfo == null || string.IsNullOrWhiteSpace(required_settings.AuthorInfo.Name))
             {
-                error_message = AUTHOR_NAME_EMPTY_ERROR_MESSAGE;
+                error_message = LocalizedText.Get(TextId.AuthorNameEmptyError);
                 return false;
             }
 
@@ -120,11 +126,46 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 .ToArray();
             if (duplicate_names.Any())
             {
-                error_message = $"{DEPENDENCIES_DUPLICATE_ERROR_MESSAGE} : {string.Join(", ", duplicate_names)}";
+                error_message = LocalizedText.Format(TextId.DependenciesDuplicateError, string.Join(", ", duplicate_names));
                 return false;
             }
 
             return true;
+        }
+
+        /// <summary> Create の前の確認（作成は止めない）：サンプルのフォルダの有無と unityRelease の形式。当てはまる警告の一覧を返す </summary>
+        internal static List<string> GetCreateWarnings(PackageOptionalSettings optional_settings, string folder)
+        {
+            List<string> warnings = new();
+
+            //サンプルのフォルダ（開発中は Samples~ ではなく Samples に置いていることがあるので、読み替えた場所も探す）
+            foreach (SampleInfo sample in optional_settings.SamplesInfo ?? new List<SampleInfo>())
+            {
+                if (sample == null || string.IsNullOrWhiteSpace(sample.Path))
+                    continue;
+                if (!IsSampleFolderExists(folder, sample.Path))
+                    warnings.Add(LocalizedText.Format(TextId.SampleFolderNotFoundWarning, sample.Path));
+            }
+
+            //unityRelease（空は出力されないので確かめない）
+            if (!string.IsNullOrWhiteSpace(optional_settings.UnityRelease) && !UnityReleaseRegex.IsMatch(optional_settings.UnityRelease.Trim()))
+                warnings.Add(LocalizedText.Format(TextId.UnityReleaseInvalidWarning, optional_settings.UnityRelease));
+
+            return warnings;
+        }
+
+        /// <summary> サンプルのフォルダがあるか判定（"Samples~/..." が無ければ "Samples/..." も探す） </summary>
+        private static bool IsSampleFolderExists(string folder, string sample_path)
+        {
+            string path = sample_path.Replace('\\', '/');
+            if (Directory.Exists(Path.Combine(folder ?? string.Empty, path)))
+                return true;
+
+            string sample_folder_prefix = $"{PACKAGE_INFO_SAMPLE_KEYWORD_2}/";
+            if (!path.StartsWith(sample_folder_prefix, StringComparison.OrdinalIgnoreCase))
+                return false;
+            string development_path = $"{PACKAGE_INFO_SAMPLE_KEYWORD_1}/{path.Substring(sample_folder_prefix.Length)}";
+            return Directory.Exists(Path.Combine(folder ?? string.Empty, development_path));
         }
     }
 }

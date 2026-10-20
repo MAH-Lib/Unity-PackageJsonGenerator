@@ -11,11 +11,6 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal class SamplesDrawer
     {
         //====定数======================================
-        private const string PACKAGE_INFO_UNITY_SAMPLE_LABEL = "パッケージサンプル情報設定";
-        private const string PACKAGE_INFO_SAMPLE_PATH_LABEL = "パス";
-        private const string PACKAGE_INFO_SAMPLE_LIST_LABEL = "サンプル一覧";
-        private const string PACKAGE_INFO_SAMPLE_INPUT_LABEL = "サンプル";
-        private const string PACKAGE_INFO_SAMPLE_PATH_HEADER = "Samples フォルダーパス設定";
 
         //====変数======================================
         [SerializeField] private bool _isShowSamples = true;
@@ -24,7 +19,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         /// <summary> パッケージサンプルの描画 </summary>
         internal void Draw(PackageOptionalSettings settings, FieldErrorStore field_errors, GUILayoutOption label_layout, GUILayoutOption button_layout)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_UNITY_SAMPLE_LABEL, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.SampleSection), EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             //サンプル情報
             using (new EditorGUILayout.HorizontalScope())
@@ -33,10 +28,10 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 {
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        EditorGUILayout.LabelField(PACKAGE_INFO_SAMPLE_INPUT_LABEL, label_layout);
-                        EditorGUILayout.LabelField(DrawerUtility.LIST_EMPTY_LABEL, GUILayout.ExpandWidth(true));
+                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.Sample), label_layout);
+                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.ListEmpty), GUILayout.ExpandWidth(true));
                         GUILayout.FlexibleSpace();
-                        if (GUILayout.Button(DrawerUtility.LIST_ADD_BUTTON, button_layout))
+                        if (GUILayout.Button(LocalizedText.Get(TextId.ListAddButton), button_layout))
                         {
                             settings.SamplesInfo.Add(new() { Path = PackageJsonValidator.PACKAGE_INFO_SAMPLE_KEYWORD_2 });
                         }
@@ -46,7 +41,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 {
                     using (new EditorGUILayout.VerticalScope())
                     {
-                        _isShowSamples = EditorGUILayout.Foldout(_isShowSamples, PACKAGE_INFO_SAMPLE_LIST_LABEL);
+                        _isShowSamples = EditorGUILayout.Foldout(_isShowSamples, LocalizedText.Get(TextId.SampleList));
                         if (_isShowSamples)
                         {
                             GUILayoutOption sample_layout = GUILayout.MaxWidth(DrawerUtility.INFO_LABEL_LOW_INCIDENT_SIZE);
@@ -60,28 +55,28 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                     //表示名
                                     using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_DISPLAY_NAME_LABEL, sample_layout);
+                                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.DisplayName), sample_layout);
                                         sample.DisplayName = EditorGUILayout.TextField(sample.DisplayName, GUILayout.ExpandWidth(true));
                                     }
                                     //概要
                                     using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_DESCRIPTION_LABEL, sample_layout);
+                                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.Description), sample_layout);
                                         sample.Description = EditorGUILayout.TextField(sample.Description, GUILayout.ExpandWidth(true));
                                     }
                                     //フォルダーパス
                                     using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        EditorGUILayout.LabelField(PACKAGE_INFO_SAMPLE_PATH_LABEL, sample_layout);
+                                        EditorGUILayout.LabelField(LocalizedText.Get(TextId.SamplePath), sample_layout);
                                         //確定時のみ検証するため DelayedTextField を使う（1文字ずつ検証すると入力できない）
                                         string selected_path = EditorGUILayout.DelayedTextField(sample.Path, GUILayout.ExpandWidth(true));
                                         //ファイル設定ボタン
-                                        if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_PATH_SETTING_BUTTON_NAME, path_button_layout))
+                                        if (GUILayout.Button(LocalizedText.Get(TextId.BrowseButton), path_button_layout))
                                         {
-                                            selected_path = EditorUtility.OpenFolderPanel(PACKAGE_INFO_SAMPLE_PATH_HEADER, Application.dataPath, string.Empty);
+                                            selected_path = EditorUtility.OpenFolderPanel(LocalizedText.Get(TextId.SamplePathDialogTitle), Application.dataPath, string.Empty);
                                         }
                                         //パスリセットボタン（入力欄の古い値で上書きされないよう、比較対象もリセット値にする）
-                                        if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_RESET_BUTTON_NAME, path_button_layout))
+                                        if (GUILayout.Button(LocalizedText.Get(TextId.ResetButton), path_button_layout))
                                         {
                                             sample.Path = PackageJsonValidator.PACKAGE_INFO_SAMPLE_KEYWORD_2;
                                             selected_path = sample.Path;
@@ -96,7 +91,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                                 field_errors.Clear(sample);
                                             }
                                             else
-                                                field_errors.Set(sample, string.Format(DrawerUtility.SAMPLE_PATH_ERROR_MESSAGE, selected_path));
+                                                field_errors.Set(sample, LocalizedText.Format(TextId.SamplePathError, selected_path));
                                         }
                                     }
                                     field_errors.Draw(sample);
@@ -105,13 +100,13 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                             using (new EditorGUILayout.HorizontalScope())
                             {
                                 GUILayout.FlexibleSpace();
-                                if (GUILayout.Button(DrawerUtility.LIST_REMOVE_BUTTON, button_layout))
+                                if (GUILayout.Button(LocalizedText.Get(TextId.ListRemoveButton), button_layout))
                                 {
                                     int count = settings.SamplesInfo.Count;
                                     field_errors.Clear(settings.SamplesInfo[count - 1]);
                                     settings.SamplesInfo.RemoveAt(--count);
                                 }
-                                if (GUILayout.Button(DrawerUtility.LIST_ADD_BUTTON, button_layout))
+                                if (GUILayout.Button(LocalizedText.Get(TextId.ListAddButton), button_layout))
                                 {
                                     settings.SamplesInfo.Add(new() { Path = PackageJsonValidator.PACKAGE_INFO_SAMPLE_KEYWORD_2 });
                                 }

@@ -9,29 +9,15 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal static class DrawerUtility
     {
         //====定数======================================
-        internal const string PACKAGE_INFO_NAME_LABEL = "パッケージ名";
-        internal const string PACKAGE_INFO_VERSION_LABEL = "バージョン";
-        internal const string PACKAGE_INFO_DESCRIPTION_LABEL = "概要";
-        internal const string PACKAGE_INFO_DISPLAY_NAME_LABEL = "UPM表示名";
-        internal const string PACKAGE_INFO_MAJOR_LABEL = "Major ";
-        internal const string PACKAGE_INFO_MINOR_LABEL = "Minor";
-        internal const string PACKAGE_INFO_PATCH_LABEL = "Patch";
-        internal const string PACKAGE_INFO_PATH_SETTING_BUTTON_NAME = "Browse";
-        internal const string PACKAGE_INFO_RESET_BUTTON_NAME = "Reset";
-        internal const string PACKAGE_INFO_AUTHOR_URL_OPEN_BUTTON = "Open URL";
-
-        internal const string LIST_EMPTY_LABEL = "None Data ...";
-        internal const string LIST_ADD_BUTTON = "Add";
-        internal const string LIST_REMOVE_BUTTON = "Remove";
-
-        internal const string PACKAGE_NAME_ERROR_MESSAGE = "「{0}」はパッケージ名の形式ではありません（例：com.company.my-tool。小文字の英数字とハイフンをドットで区切ります）";
-        internal const string EMAIL_ERROR_MESSAGE = "「{0}」は E-mail の形式ではありません（例：name@example.com）";
-        internal const string URL_ERROR_MESSAGE = "「{0}」は URL の形式ではありません（http:// か https:// で始めてください）";
-        internal const string SAMPLE_PATH_ERROR_MESSAGE = "「{0}」からサンプルのパスを作れません。Samples か Samples~ フォルダの下のフォルダを指定してください（例：Samples~/Basic）";
+        //文言は LocalizedText の表にある
 
         internal const int INFO_LABEL_SIZE = 130;
         internal const int INFO_LABEL_LOW_INCIDENT_SIZE = 110;
         internal const int INFO_BUTTON_SIZE = 80;
+        //英語の見出しは日本語より長いため、余裕を持たせる
+        private const int SECTION_TITLE_MAX_WIDTH = 200;
+        private const int PRE_RELEASE_LABEL_SIZE = 80;
+        private const int PRE_RELEASE_INPUT_MIN_SIZE = 60;
 
         //====描画======================================
         /// <summary> 中央寄せの太字の見出し描画 </summary>
@@ -40,15 +26,16 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 GUILayout.FlexibleSpace();
-                EditorGUILayout.LabelField(title, EditorStyles.boldLabel, GUILayout.MaxWidth(100));
+                EditorGUILayout.LabelField(title, EditorStyles.boldLabel, GUILayout.MaxWidth(SECTION_TITLE_MAX_WIDTH));
                 GUILayout.FlexibleSpace();
             }
         }
 
         /// <summary> 検証付きの入力欄描画（確定した値が変わったときだけ検証し、不正ならエラーを登録して今の値を返す） </summary>
-        internal static string DrawValidatedTextField(FieldErrorStore field_errors, object key, string current, Func<string, bool> is_valid, string error_format)
+        internal static string DrawValidatedTextField(FieldErrorStore field_errors, object key, string current, Func<string, bool> is_valid, TextId error_id, params GUILayoutOption[] options)
         {
-            string input = EditorGUILayout.DelayedTextField(current, GUILayout.ExpandWidth(true));
+            //レイアウトの指定が無ければ横幅いっぱいにする
+            string input = EditorGUILayout.DelayedTextField(current, options.Length > 0 ? options : new[] { GUILayout.ExpandWidth(true) });
             if (input == current)
                 return current;
 
@@ -63,19 +50,23 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 return input;
             }
 
-            field_errors.Set(key, string.Format(error_format, input));
+            field_errors.Set(key, LocalizedText.Format(error_id, input));
             return current;
         }
 
-        /// <summary> バージョン（Major / Minor / Patch）の入力欄描画（負の値は 0 にする） </summary>
-        internal static void DrawVersionFields(ref Vector3Int version, GUILayoutOption label_layout, GUILayoutOption input_layout)
+        /// <summary> バージョン（Major / Minor / Patch とプレリリースの表記）の入力欄描画（負の値は 0 にする。表記の入力エラーは pre_release_key で登録する） </summary>
+        internal static void DrawVersionFields(ref Vector3Int version, ref string pre_release, FieldErrorStore field_errors, object pre_release_key, GUILayoutOption label_layout, GUILayoutOption input_layout)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_MAJOR_LABEL, label_layout);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.Major), label_layout);
             version.x = Mathf.Max(0, EditorGUILayout.IntField(version.x, input_layout));
-            EditorGUILayout.LabelField(PACKAGE_INFO_MINOR_LABEL, label_layout);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.Minor), label_layout);
             version.y = Mathf.Max(0, EditorGUILayout.IntField(version.y, input_layout));
-            EditorGUILayout.LabelField(PACKAGE_INFO_PATCH_LABEL, label_layout);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.Patch), label_layout);
             version.z = Mathf.Max(0, EditorGUILayout.IntField(version.z, input_layout));
+            //プレリリースの表記（"X.Y.Z-表記" の "表記" の部分）
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.PreRelease), GUILayout.MaxWidth(PRE_RELEASE_LABEL_SIZE));
+            pre_release = DrawValidatedTextField(field_errors, pre_release_key, pre_release, PackageJsonValidator.IsValidPreRelease, TextId.PreReleaseError,
+                GUILayout.MinWidth(PRE_RELEASE_INPUT_MIN_SIZE), GUILayout.ExpandWidth(true));
         }
     }
 }

@@ -24,6 +24,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         [SerializeField] internal List<DependenciesInfo> Dependencies;
         /// <summary> サンプル </summary>
         [SerializeField] internal List<SampleInfo> SamplesInfo;
+        /// <summary> このツールが扱わないキー（JSON オブジェクトの文字列。Newtonsoft の JToken は Unity がシリアライズできないため文字列で持つ） </summary>
+        [SerializeField] internal string ExtraJson;
 
         //====コンストラクタ===============
         internal PackageOptionalSettings()
@@ -36,6 +38,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             Keywords = new();
             Dependencies = new();
             SamplesInfo = new();
+            ExtraJson = string.Empty;
         }
 
         //====リセット====================
@@ -50,6 +53,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             Keywords.Clear();
             Dependencies.Clear();
             SamplesInfo.Clear();
+            ExtraJson = string.Empty;
         }
     }
 }

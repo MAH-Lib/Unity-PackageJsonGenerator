@@ -12,19 +12,10 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal class RequiredSettingsDrawer
     {
         //====定数======================================
-        private const string REQUIRED_PACKAGE_INFO_LABEL = "必須設定項目";
-        private const string PACKAGE_INFO_LABEL = "パッケージ情報設定";
-        private const string PACKAGE_INFO_UNITY_VERSION_LABEL = "対応 Unity バージョン設定";
-        private const string UNITY_VERSION_UNLISTED_LABEL = "（一覧外）";
-        private const string PACKAGE_INFO_AUTHOR_LABEL = "著者情報設定";
-        private const string PACKAGE_INFO_AUTHOR_NAME_LABEL = "著者名";
-        private const string PACKAGE_INFO_AUTHOR_EMAIL_LABEL = "E-mail";
-        private const string PACKAGE_INFO_AUTHOR_URL_LABEL = "URL";
-        private const string PACKAGE_INFO_LICENSES_LABEL = "ライセンス情報設定";
-        private const string PACKAGE_INFO_LICENSES_NAME_LABEL = "ライセンス";
 
         //入力エラーの辞書のキー
         private const string FIELD_KEY_PACKAGE_NAME = "PackageName";
+        private const string FIELD_KEY_PRE_RELEASE = "PreRelease";
         private const string FIELD_KEY_AUTHOR_EMAIL = "AuthorEmail";
         private const string FIELD_KEY_AUTHOR_URL = "AuthorURL";
 
@@ -49,8 +40,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         }
 
         //====描画======================================
-        /// <summary> 必須項目の描画 </summary>
-        internal void Draw(PackageRequiredSettings settings, FieldErrorStore field_errors)
+        /// <summary> 必須項目の描画（on_create_license：「LICENSE.md を作成」、on_apply_current_editor：「現在の Editor に合わせる」ボタンを押したときの処理） </summary>
+        internal void Draw(PackageRequiredSettings settings, FieldErrorStore field_errors, Action on_create_license, Action on_apply_current_editor)
         {
             GUILayoutOption label_layout = GUILayout.MaxWidth(DrawerUtility.INFO_LABEL_SIZE);
             GUILayoutOption button_layout = GUILayout.MaxWidth(DrawerUtility.INFO_BUTTON_SIZE);
@@ -60,7 +51,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             using (new EditorGUILayout.VerticalScope(GUI.skin.box))
             {
                 //必須設定項目ラベル
-                DrawerUtility.DrawSectionTitle(REQUIRED_PACKAGE_INFO_LABEL);
+                DrawerUtility.DrawSectionTitle(LocalizedText.Get(TextId.RequiredSection));
 
                 EditorGUILayout.Space();
 
@@ -70,12 +61,12 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 EditorGUILayout.Space();
 
                 //Unityバージョン設定
-                DrawUnityVersionSettings(settings, label_layout);
+                DrawUnityVersionSettings(settings, label_layout, on_apply_current_editor);
 
                 EditorGUILayout.Space();
 
                 //ライセンス情報
-                DrawLicenseInfoSettings(settings, label_layout);
+                DrawLicenseInfoSettings(settings, label_layout, on_create_license);
 
                 EditorGUILayout.Space();
 
@@ -92,12 +83,12 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             GUILayoutOption version_layout = GUILayout.MaxWidth(50);
             GUILayoutOption version_input_layout = GUILayout.MaxWidth(60);
 
-            EditorGUILayout.LabelField(PACKAGE_INFO_LABEL, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.PackageInfoSection), EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             //パッケージ名設定
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_NAME_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.PackageName), label_layout);
                 string name = EditorGUILayout.DelayedTextField(settings.Name, GUILayout.ExpandWidth(true));
                 //確定した値が変わったときだけ検証する（毎フレーム検証するとエラー表示がすぐ消えるため）
                 if (name != settings.Name)
@@ -113,7 +104,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                         field_errors.Clear(FIELD_KEY_PACKAGE_NAME);
                     }
                     else
-                        field_errors.Set(FIELD_KEY_PACKAGE_NAME, string.Format(DrawerUtility.PACKAGE_NAME_ERROR_MESSAGE, name));
+                        field_errors.Set(FIELD_KEY_PACKAGE_NAME, LocalizedText.Format(TextId.PackageNameError, name));
                 }
             }
             field_errors.Draw(FIELD_KEY_PACKAGE_NAME);
@@ -121,34 +112,41 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             //パッケージバージョン設定
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_VERSION_LABEL, label_layout);
-                DrawerUtility.DrawVersionFields(ref settings.Version, version_layout, version_input_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.Version), label_layout);
+                DrawerUtility.DrawVersionFields(ref settings.Version, ref settings.PreRelease, field_errors, FIELD_KEY_PRE_RELEASE, version_layout, version_input_layout);
             }
+            field_errors.Draw(FIELD_KEY_PRE_RELEASE);
 
             //パッケージ表示名設定
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_DISPLAY_NAME_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.DisplayName), label_layout);
                 settings.DisplayName = EditorGUILayout.TextField(settings.DisplayName, GUILayout.ExpandWidth(true));
             }
 
             //パッケージ概要設定
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_DESCRIPTION_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.Description), label_layout);
                 settings.Description = EditorGUILayout.TextArea(settings.Description, GUILayout.ExpandWidth(true));
             }
             EditorGUI.indentLevel--;
         }
 
         //Unityバージョン設定
-        private void DrawUnityVersionSettings(PackageRequiredSettings settings, GUILayoutOption label_layout)
+        private void DrawUnityVersionSettings(PackageRequiredSettings settings, GUILayoutOption label_layout, Action on_apply_current_editor)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_UNITY_VERSION_LABEL, EditorStyles.boldLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.UnityVersionSection), EditorStyles.boldLabel);
+                //unityRelease は任意項目にあるので、両方を書き換える処理は Window に任せる
+                if (GUILayout.Button(LocalizedText.Get(TextId.ApplyCurrentEditorButton), GUILayout.ExpandWidth(false)))
+                    on_apply_current_editor?.Invoke();
+            }
             EditorGUI.indentLevel++;
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_MAJOR_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.Major), label_layout);
                 int major = DrawVersionPopup(settings.MajorVer, UnityVersionConverter.GetMajorVersions(), UnityVersionConverter.GetMajorVersionLabel);
                 if (settings.MajorVer != major)
                 {
@@ -160,7 +158,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             }
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_MINOR_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.Minor), label_layout);
                 settings.MinorVer = DrawVersionPopup(settings.MinorVer, UnityVersionConverter.GetMinorVersions(settings.MajorVer), minor => minor.ToString());
             }
             EditorGUI.indentLevel--;
@@ -173,7 +171,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             int index = Array.IndexOf(versions, current);
             if (index < 0)
             {
-                labels.Add($"{to_label(current)}{UNITY_VERSION_UNLISTED_LABEL}");
+                labels.Add($"{to_label(current)}{LocalizedText.Get(TextId.UnityVersionUnlisted)}");
                 index = labels.Count - 1;
             }
 
@@ -184,24 +182,24 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         //パッケージ著者情報設定
         private void DrawAuthorSettings(PackageRequiredSettings settings, FieldErrorStore field_errors, GUILayoutOption label_layout, GUILayoutOption button_layout)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_AUTHOR_LABEL, EditorStyles.boldLabel, label_layout);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.AuthorSection), EditorStyles.boldLabel, label_layout);
             EditorGUI.indentLevel++;
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(PACKAGE_INFO_AUTHOR_NAME_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.AuthorName), label_layout);
                 settings.AuthorInfo.Name = EditorGUILayout.TextField(settings.AuthorInfo.Name, GUILayout.ExpandWidth(true));
             }
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(PACKAGE_INFO_AUTHOR_EMAIL_LABEL, label_layout);
-                settings.AuthorInfo.Email = DrawerUtility.DrawValidatedTextField(field_errors, FIELD_KEY_AUTHOR_EMAIL, settings.AuthorInfo.Email, PackageJsonValidator.IsValidEmail, DrawerUtility.EMAIL_ERROR_MESSAGE);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.AuthorEmail), label_layout);
+                settings.AuthorInfo.Email = DrawerUtility.DrawValidatedTextField(field_errors, FIELD_KEY_AUTHOR_EMAIL, settings.AuthorInfo.Email, PackageJsonValidator.IsValidEmail, TextId.EmailError);
             }
             field_errors.Draw(FIELD_KEY_AUTHOR_EMAIL);
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(PACKAGE_INFO_AUTHOR_URL_LABEL, label_layout);
-                settings.AuthorInfo.URL = DrawerUtility.DrawValidatedTextField(field_errors, FIELD_KEY_AUTHOR_URL, settings.AuthorInfo.URL, PackageJsonValidator.IsValidURL, DrawerUtility.URL_ERROR_MESSAGE);
-                if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_AUTHOR_URL_OPEN_BUTTON, button_layout))
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.AuthorURL), label_layout);
+                settings.AuthorInfo.URL = DrawerUtility.DrawValidatedTextField(field_errors, FIELD_KEY_AUTHOR_URL, settings.AuthorInfo.URL, PackageJsonValidator.IsValidURL, TextId.URLError);
+                if (GUILayout.Button(LocalizedText.Get(TextId.OpenURLButton), button_layout))
                 {
                     if (!string.IsNullOrWhiteSpace(settings.AuthorInfo.URL))
                         Application.OpenURL(settings.AuthorInfo.URL);
@@ -212,15 +210,15 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         }
 
         //ライセンス情報設定
-        private void DrawLicenseInfoSettings(PackageRequiredSettings settings, GUILayoutOption label_layout)
+        private void DrawLicenseInfoSettings(PackageRequiredSettings settings, GUILayoutOption label_layout, Action on_create_license)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_LICENSES_LABEL, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.LicenseSection), EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
 
             //ライセンス名
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(PACKAGE_INFO_LICENSES_NAME_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.License), label_layout);
                 LicenseType license_type = (LicenseType)EditorGUILayout.EnumPopup(_licenseType, GUILayout.MaxWidth(200));
                 if (_licenseType != license_type)
                 {
@@ -241,6 +239,9 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                     boxStyle.normal.textColor = Color.white;
                     EditorGUILayout.LabelField(_licenseName, boxStyle, GUILayout.ExpandWidth(true));
                 }
+                //独自ライセンスは定型文が無いので、ひな形の LICENSE.md を作れるようにする
+                if (_licenseType == LicenseType.Proprietary && GUILayout.Button(LocalizedText.Get(TextId.CreateLicenseButton), GUILayout.ExpandWidth(false)))
+                    on_create_license?.Invoke();
             }
 
             EditorGUI.indentLevel--;

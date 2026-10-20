@@ -7,9 +7,13 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal static class VersionOperatorConverter
     {
         //====変数=========================================
-        private static readonly Regex VersionOnlyRegex = new(@"^\s*(\d+\.\d+\.\d+)\s*$");
-        private static readonly Regex OperatorMatchRegex = new(@"^\s*(>=|<=|>|<)\s*(\d+\.\d+\.\d+)\s*$");
-        private static readonly Regex RangeMatchRegex = new(@"^\s*(\d+\.\d+\.\d+)\s*-\s*(\d+\.\d+\.\d+)\s*$");
+        //"X.Y.Z" と、後ろに付くプレリリースの表記（"-preview.1" など。規則に合うかは PackageSettingsConverter で確かめる）
+        private const string VERSION_PATTERN = @"\d+\.\d+\.\d+(?:-[0-9A-Za-z.\-]+)?";
+
+        private static readonly Regex VersionOnlyRegex = new($@"^\s*({VERSION_PATTERN})\s*$");
+        private static readonly Regex OperatorMatchRegex = new($@"^\s*(>=|<=|>|<)\s*({VERSION_PATTERN})\s*$");
+        //範囲は前後に空白がある " - " だけを認識する（空白の無い "1.0.0-2.0.0" は SemVer のプレリリースとして上で読まれる）
+        private static readonly Regex RangeMatchRegex = new($@"^\s*({VERSION_PATTERN})\s+-\s+({VERSION_PATTERN})\s*$");
 
         //====関数=========================================
         /// <summary> バージョン制約文字列から完全一致のバージョンを取り出す（演算子付き・範囲は変換扱い） </summary>

@@ -11,18 +11,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal class OptionalSettingsDrawer
     {
         //====定数======================================
-        private const string OPTIONAL_PACKAGE_INFO_LABEL = "任意設定項目";
-        private const string PACKAGE_INFO_UNITY_LABEL = "Unity 情報設定";
-        private const string PACKAGE_INFO_UNITY_RELEASE_VERSION_LABEL = "リリースバージョン";
-        private const string PACKAGE_INFO_UPM_HIDE_LABEL = "UPM除外フラグ";
-        private const string PACKAGE_INFO_DOCS_LABEL = "ドキュメント情報設定";
-        private const string PACKAGE_INFO_CHANGELOG_URL_LABEL = "変更ログURL";
-        private const string PACKAGE_INFO_DOCUMENTATION_URL_LABEL = "ドキュメントURL";
-        private const string PACKAGE_INFO_LICENSES_URL_LABEL = "ライセンスURL";
 
-        private const string PACKAGE_INFO_KEYWORD_LABEL = "キーワード情報設定";
-        private const string PACKAGE_INFO_KEYWORD_LIST_LABEL = "キーワード一覧";
-        private const string PACKAGE_INFO_KEYWORD_INPUT_LABEL = "キーワード";
 
         //入力エラーの辞書のキー
         private const string FIELD_KEY_CHANGELOG_URL = "ChangelogURL";
@@ -33,6 +22,10 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         [SerializeField] private bool _isShowKeyword = true;
         [SerializeField] private SamplesDrawer _samplesDrawer = new();
         [SerializeField] private DependenciesDrawer _dependenciesDrawer = new();
+
+        /// <summary> 未対応キーの名前の一覧のキャッシュ（ExtraJson が変わったときだけ作り直す） </summary>
+        [NonSerialized] private string _cachedExtraJson;
+        [NonSerialized] private string[] _cachedExtraKeys = Array.Empty<string>();
 
         //====描画======================================
         /// <summary> 任意項目の描画 </summary>
@@ -46,7 +39,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             using (new EditorGUILayout.VerticalScope(GUI.skin.box))
             {
                 //任意設定項目ラベル
-                DrawerUtility.DrawSectionTitle(OPTIONAL_PACKAGE_INFO_LABEL);
+                DrawerUtility.DrawSectionTitle(LocalizedText.Get(TextId.OptionalSection));
 
                 //Unity情報設定
                 DrawUnityInfoSettings(settings, label_layout);
@@ -72,25 +65,52 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 _dependenciesDrawer.Draw(settings, field_errors, label_layout, button_layout);
 
                 EditorGUILayout.Space();
+
+                //このツールが扱わないキー
+                DrawExtraKeys(settings, label_layout, button_layout);
             }
+        }
+
+        //その他の項目（このツールが扱わないキー。Load した値を Create でそのまま書き戻す）
+        private void DrawExtraKeys(PackageOptionalSettings settings, GUILayoutOption label_layout, GUILayoutOption button_layout)
+        {
+            if (_cachedExtraJson != settings.ExtraJson)
+            {
+                _cachedExtraJson = settings.ExtraJson;
+                _cachedExtraKeys = PackageSettingsConverter.GetExtraKeys(settings.ExtraJson);
+            }
+            if (!_cachedExtraKeys.Any())
+                return;
+
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.ExtraKeysSection), EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField(string.Join(", ", _cachedExtraKeys), EditorStyles.wordWrappedLabel, GUILayout.ExpandWidth(true));
+                if (GUILayout.Button(LocalizedText.Get(TextId.ClearButton), button_layout))
+                    settings.ExtraJson = string.Empty;
+            }
+            EditorGUI.indentLevel--;
+
+            EditorGUILayout.Space();
         }
 
         //Unity情報設定
         private void DrawUnityInfoSettings(PackageOptionalSettings settings, GUILayoutOption label_layout)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_UNITY_LABEL, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.UnityInfoSection), EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             //リリースバージョン
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(PACKAGE_INFO_UNITY_RELEASE_VERSION_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.UnityRelease), label_layout);
                 settings.UnityRelease = EditorGUILayout.TextField(settings.UnityRelease, GUILayout.ExpandWidth(true));
             }
 
             //UPMウィンドウ表示フラグ
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(PACKAGE_INFO_UPM_HIDE_LABEL, label_layout);
+                EditorGUILayout.LabelField(LocalizedText.Get(TextId.HideInEditor), label_layout);
                 settings.HideInEditor = EditorGUILayout.Toggle(settings.HideInEditor);
             }
             EditorGUI.indentLevel--;
@@ -99,14 +119,14 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         //ドキュメント情報設定
         private void DrawDocumentationSettings(PackageOptionalSettings settings, FieldErrorStore field_errors, GUILayoutOption label_layout, GUILayoutOption button_layout)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_DOCS_LABEL, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.DocumentationSection), EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
             //更新ログURL
-            settings.ChangelogURL = DrawURLField(PACKAGE_INFO_CHANGELOG_URL_LABEL, FIELD_KEY_CHANGELOG_URL, settings.ChangelogURL, field_errors, label_layout, button_layout);
+            settings.ChangelogURL = DrawURLField(LocalizedText.Get(TextId.ChangelogURL), FIELD_KEY_CHANGELOG_URL, settings.ChangelogURL, field_errors, label_layout, button_layout);
             //ドキュメントURL
-            settings.DocumentationURL = DrawURLField(PACKAGE_INFO_DOCUMENTATION_URL_LABEL, FIELD_KEY_DOCUMENTATION_URL, settings.DocumentationURL, field_errors, label_layout, button_layout);
+            settings.DocumentationURL = DrawURLField(LocalizedText.Get(TextId.DocumentationURL), FIELD_KEY_DOCUMENTATION_URL, settings.DocumentationURL, field_errors, label_layout, button_layout);
             //ライセンスURL
-            settings.LicensesURL = DrawURLField(PACKAGE_INFO_LICENSES_URL_LABEL, FIELD_KEY_LICENSES_URL, settings.LicensesURL, field_errors, label_layout, button_layout);
+            settings.LicensesURL = DrawURLField(LocalizedText.Get(TextId.LicensesURL), FIELD_KEY_LICENSES_URL, settings.LicensesURL, field_errors, label_layout, button_layout);
             EditorGUI.indentLevel--;
         }
 
@@ -116,8 +136,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUILayout.LabelField(label, label_layout);
-                url = DrawerUtility.DrawValidatedTextField(field_errors, key, url, PackageJsonValidator.IsValidURL, DrawerUtility.URL_ERROR_MESSAGE);
-                if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_AUTHOR_URL_OPEN_BUTTON, button_layout))
+                url = DrawerUtility.DrawValidatedTextField(field_errors, key, url, PackageJsonValidator.IsValidURL, TextId.URLError);
+                if (GUILayout.Button(LocalizedText.Get(TextId.OpenURLButton), button_layout))
                 {
                     if (!string.IsNullOrWhiteSpace(url))
                         Application.OpenURL(url);
@@ -130,17 +150,17 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         //キーワード設定
         private void DrawKeyWordList(PackageOptionalSettings settings, GUILayoutOption label_layout, GUILayoutOption button_layout)
         {
-            EditorGUILayout.LabelField(PACKAGE_INFO_KEYWORD_LABEL, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(LocalizedText.Get(TextId.KeywordSection), EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
 
             if (!settings.Keywords.Any())
             {
                 using (new EditorGUILayout.HorizontalScope())
                 {
-                    EditorGUILayout.LabelField(PACKAGE_INFO_KEYWORD_INPUT_LABEL, label_layout);
-                    EditorGUILayout.LabelField(DrawerUtility.LIST_EMPTY_LABEL, GUILayout.ExpandWidth(true));
+                    EditorGUILayout.LabelField(LocalizedText.Get(TextId.Keyword), label_layout);
+                    EditorGUILayout.LabelField(LocalizedText.Get(TextId.ListEmpty), GUILayout.ExpandWidth(true));
                     GUILayout.FlexibleSpace();
-                    if (GUILayout.Button(DrawerUtility.LIST_ADD_BUTTON, button_layout))
+                    if (GUILayout.Button(LocalizedText.Get(TextId.ListAddButton), button_layout))
                     {
                         settings.Keywords.Add(string.Empty);
                     }
@@ -148,7 +168,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             }
             else
             {
-                _isShowKeyword = EditorGUILayout.Foldout(_isShowKeyword, PACKAGE_INFO_KEYWORD_LIST_LABEL);
+                _isShowKeyword = EditorGUILayout.Foldout(_isShowKeyword, LocalizedText.Get(TextId.KeywordList));
                 if (_isShowKeyword)
                 {
                     GUILayoutOption keyword_layout = GUILayout.MaxWidth(DrawerUtility.INFO_LABEL_LOW_INCIDENT_SIZE);
@@ -157,9 +177,9 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                     {
                         using (new EditorGUILayout.HorizontalScope(GUI.skin.box))
                         {
-                            EditorGUILayout.LabelField(PACKAGE_INFO_KEYWORD_INPUT_LABEL, keyword_layout);
+                            EditorGUILayout.LabelField(LocalizedText.Get(TextId.Keyword), keyword_layout);
                             settings.Keywords[index] = EditorGUILayout.TextField(settings.Keywords[index], GUILayout.ExpandWidth(true));
-                            if (GUILayout.Button(DrawerUtility.LIST_REMOVE_BUTTON, button_layout))
+                            if (GUILayout.Button(LocalizedText.Get(TextId.ListRemoveButton), button_layout))
                             {
                                 settings.Keywords.RemoveAt(index);
                                 index--;
@@ -169,7 +189,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                     using (new EditorGUILayout.HorizontalScope())
                     {
                         GUILayout.FlexibleSpace();
-                        if (GUILayout.Button(DrawerUtility.LIST_ADD_BUTTON, button_layout))
+                        if (GUILayout.Button(LocalizedText.Get(TextId.ListAddButton), button_layout))
                         {
                             settings.Keywords.Add(string.Empty);
                         }

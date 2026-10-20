@@ -17,7 +17,9 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             { LicenseType.MPL_2_0, "MPL-2.0" },
             { LicenseType.BSD_3_Clause, "BSD-3-Clause" },
             { LicenseType.CC0_1_0, "CC0-1.0" },
-            { LicenseType.EPL_2_0, "EPL-2.0" }
+            { LicenseType.EPL_2_0, "EPL-2.0" },
+            //SPDX の ID ではなく、npm の慣習で「誰にも使用を許可しない」を表す値
+            { LicenseType.None, "UNLICENSED" }
         };
 
         private static readonly Dictionary<LicenseType, string> LICENSE_NAME_LIST = new()
@@ -31,7 +33,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             { LicenseType.MPL_2_0, "Mozilla Public License 2.0" },
             { LicenseType.BSD_3_Clause, "BSD 3-Clause License" },
             { LicenseType.CC0_1_0, "Creative Commons Zero v1.0" },
-            { LicenseType.EPL_2_0, "Eclipse Public License 2.0" }
+            { LicenseType.EPL_2_0, "Eclipse Public License 2.0" },
+            { LicenseType.None, "UNLICENSED (no permission granted)" }
         };
 
         //====関数=======================================

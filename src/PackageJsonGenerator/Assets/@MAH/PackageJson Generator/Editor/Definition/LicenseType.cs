@@ -26,6 +26,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         EPL_2_0,
         //その他のライセンス
         Other,
+        //ライセンスなし（誰にも使用を許可しない。"UNLICENSED" を出力する。既存の値を変えないよう末尾に置く）
+        None,
     }
 }
 #endif
