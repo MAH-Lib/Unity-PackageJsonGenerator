@@ -5,6 +5,9 @@
   "displayName": "PackageJsonGenerator",
   "unity": "6000.0",
   "license": "MIT",
+  "licensesUrl": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator/blob/main/LICENSE",
+  "changelogUrl": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator/blob/main/PackageJsonGenerator/CHANGELOG.md",
+  "documentationUrl": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator#readme",
   "hideInEditor": false,
   "author": {
     "name": "MAH-Lib",

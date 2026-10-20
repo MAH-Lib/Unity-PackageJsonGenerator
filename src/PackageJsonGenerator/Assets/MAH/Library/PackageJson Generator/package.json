@@ -1,10 +1,13 @@
 {
   "name": "com.mah.package-json-generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "UnityのUPM形式に準拠した package.json をGUIから簡単に生成できるエディタウィンドウです。必要な情報を入力して「Create」ボタンを押すだけで、自動的にpackage.jsonを作成します。",
   "displayName": "PackageJsonGenerator",
   "unity": "6000.0",
   "license": "MIT",
+  "licensesUrl": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator/blob/main/LICENSE",
+  "changelogUrl": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator/blob/main/PackageJsonGenerator/CHANGELOG.md",
+  "documentationUrl": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator#readme",
   "hideInEditor": false,
   "author": {
     "name": "MAH-Lib",

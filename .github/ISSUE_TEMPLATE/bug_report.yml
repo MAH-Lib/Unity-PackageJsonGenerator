@@ -1,0 +1,68 @@
+name: Bug report
+description: Report a problem with PackageJson Generator
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Please check the [Known limitations](https://github.com/MAH-Lib/Unity-PackageJsonGenerator#known-limitations) section of the README first.
+        Japanese is also welcome. / 日本語での報告も歓迎します。
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+      description: The version shown in Package Manager.
+      placeholder: "1.0.1"
+    validations:
+      required: true
+  - type: input
+    id: unity-version
+    attributes:
+      label: Unity version
+      placeholder: "6000.0.30f1"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open MAH > Generator > PackageJson Generator Window
+        2. Enter ...
+        3. Click Create package.json
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: package-json
+    attributes:
+      label: Generated or loaded package.json (if related)
+      description: Remove any private information before pasting.
+      render: json
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors (if any)
+      render: text
