@@ -36,7 +36,7 @@ To pin a specific version, append a release tag to the URL (for example `...?pat
 
 ## Usage
 
-> The window's labels are currently in Japanese. The English meaning is shown in parentheses below.
+> The window is available in English and Japanese. Choose the language from **Language** at the top right of the window. Your choice is saved for next time. When you open the window for the first time, it uses Japanese if your computer's language is Japanese, and English otherwise. (The screenshots below show the Japanese window.)
 
 1. From the menu bar, select **MAH > Generator > PackageJson Generator Window**.
 
@@ -44,11 +44,11 @@ To pin a specific version, append a release tag to the URL (for example `...?pat
 
 2. Fill in the fields in the Editor window.
 
-   - **必須設定項目 (Required settings)**: these must be filled in. In the author settings, **E-mail** and **URL** are optional.
+   - **Required settings**: these must be filled in. In the author settings, **E-mail** and **URL** are optional.
 
      ![Image2](Image/Image2.png)
 
-   - **任意設定項目 (Optional settings)**: fill in only what you need.
+   - **Optional settings**: fill in only what you need.
 
      ![Image3](Image/Image3.png)
 
@@ -64,29 +64,37 @@ To pin a specific version, append a release tag to the URL (for example `...?pat
 
 Set the folder that contains the existing `package.json`, then click **Load package.json**. The fields are filled with the file's contents. You can edit them and click **Create package.json** to save again.
 
+Keys that this tool does not handle (for example `type`, `repository` or `testables`) are kept and written back unchanged. They are listed under **Other keys** in the optional settings, and **Clear** removes them.
+
+Open **JSON preview** above the buttons to see the content that **Create package.json** will write.
+
+### Working on several packages
+
+Each package you load or create is remembered until you close the Unity Editor. Choose a package from **Remembered packages** at the top of the window to switch to it. Your unsaved edits to the current package are kept when you switch, and also when you close the window. **Remove from list** removes the current package from the list.
+
 ## Fields
 
-| Section | Field (label in the window) | `package.json` key | Notes |
+| Section | Field (label in the English window) | `package.json` key | Notes |
 |---|---|---|---|
-| Required | Package name (パッケージ名) | `name` | Lowercase, dot-separated (e.g. `com.company.my-tool`) |
-| Required | Version (バージョン) | `version` | Major / Minor / Patch |
-| Required | Display name (UPM表示名) | `displayName` | Name shown in Package Manager |
-| Required | Description (概要) | `description` | |
-| Required | Unity version (対応 Unity バージョン設定) | `unity` | Minimum supported Unity version (e.g. `6000.0`). Choose from Unity 5.0 to Unity 6.6 (`6000.6`) |
-| Required | License (ライセンス) | `license` | Choose from common SPDX licenses |
-| Required | Author (著者情報設定) | `author` | Name is required. E-mail and URL are optional |
-| Optional | Release version (リリースバージョン) | `unityRelease` | e.g. `0f1` |
-| Optional | Hide in editor (UPM除外フラグ) | `hideInEditor` | |
+| Required | Package name | `name` | Lowercase, dot-separated (e.g. `com.company.my-tool`) |
+| Required | Version | `version` | Major / Minor / Patch, and an optional **Pre-release** label (e.g. `preview.1` gives `1.2.0-preview.1`) |
+| Required | Display name | `displayName` | Name shown in Package Manager |
+| Required | Description | `description` | |
+| Required | Supported Unity version | `unity` | Minimum supported Unity version (e.g. `6000.0`). Choose from Unity 5.0 to Unity 6.6 (`6000.6`). **Use current Editor version** sets this and the release version from the Editor you are using |
+| Required | License | `license` | Choose from common SPDX licenses. **None** writes `UNLICENSED` (no permission granted). **Other** lets you enter any SPDX ID. When **Proprietary** is selected, **Create LICENSE.md** creates a `LICENSE.md` template with the author name and the current year in the folder (a template only, not legal advice) |
+| Required | Author | `author` | Name is required. E-mail and URL are optional |
+| Optional | Release version | `unityRelease` | e.g. `0f1`. A warning is shown when you create the file if the format looks wrong |
+| Optional | Hide in editor | `hideInEditor` | |
 | Optional | Changelog / Documentation / License URL | `changelogUrl` / `documentationUrl` / `licensesUrl` | Must start with `http://` or `https://` |
-| Optional | Keywords (キーワード) | `keywords` | |
-| Optional | Samples (サンプル) | `samples` | Path is converted to start with `Samples~` |
-| Optional | Dependencies (外部パッケージ) | `dependencies` | Exact versions only (`X.Y.Z`), as required by Unity Package Manager. You can pick packages installed in your project |
+| Optional | Keywords | `keywords` | |
+| Optional | Samples | `samples` | Path is converted to start with `Samples~`. A warning is shown when you create the file if the folder does not exist in the package folder |
+| Optional | Dependencies | `dependencies` | Exact versions only (`X.Y.Z`, or `X.Y.Z-pre.1` with a pre-release label), as required by Unity Package Manager. You can pick packages installed in your project |
 
 Empty optional fields are not written to the file.
 
 ## Known limitations
 
-- The entered values are kept when scripts are recompiled, but they are cleared when the window is closed.
+- Packages you have not loaded or created yet (not in **Remembered packages**) are cleared when the window is closed. Remembered packages are cleared when the Unity Editor is closed.
 
 These will be addressed in future updates.
 

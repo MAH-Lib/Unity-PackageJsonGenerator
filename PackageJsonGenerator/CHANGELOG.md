@@ -16,8 +16,19 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The result of **Create package.json** and **Load package.json** (success, warnings or the reason for an error) is now shown in the window.
 - **Create package.json** now asks for confirmation before overwriting an existing `package.json`.
 - The entered values are now kept when scripts are recompiled (domain reload).
+- The window is now available in English and Japanese. Choose the language from **Language** at the top right. The choice is saved, and the first language follows your computer's language (Japanese if it is Japanese, English otherwise).
+- Pre-release versions (for example `1.2.0-preview.1`) can now be set for the package version and for dependencies. Pre-release versions are kept when loading a `package.json`, and are also set when you pick an installed preview package from the dependencies list.
+- **None** license option, which writes `"license": "UNLICENSED"` (no permission granted).
+- **Create LICENSE.md** button (shown when the license is **Proprietary**), which creates a `LICENSE.md` template with the author name and the current year in the selected folder.
+- Packages you load or create are remembered until you close the Unity Editor. Switch between them from **Remembered packages** at the top of the window; unsaved edits are kept.
+- Keys that this tool does not handle (for example `type` or `repository`) are now kept when loading a `package.json` and written back unchanged. They are listed under **Other keys**.
+- **JSON preview**, which shows the content that **Create package.json** will write.
+- **Use current Editor version** button, which sets `unity` and `unityRelease` from the Editor you are using (for example `6000.3` and `26f1`).
+- **Create package.json** now shows warnings (without stopping) when a sample folder does not exist in the package folder, or when the release version does not look like a Unity release (for example `0f1`).
 
 ### Changed
+
+- The "None Data ..." text shown for empty lists is now "No data" (English) or "データがありません" (Japanese).
 
 - The default Unity version is now `6000.0` (was `6000.1`). When you change the Major version, the Minor version is set to the oldest one in the list.
 - The Unity version is now shown as numbers (for example `6000 (Unity 6)` and `3`) instead of enum names.
