@@ -50,7 +50,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                         if (_isShowSamples)
                         {
                             GUILayoutOption sample_layout = GUILayout.MaxWidth(DrawerUtility.INFO_LABEL_LOW_INCIDENT_SIZE);
-                            GUILayoutOption apth_button_layout = GUILayout.MaxWidth(65);
+                            GUILayoutOption path_button_layout = GUILayout.MaxWidth(65);
                             EditorGUI.indentLevel++;
 
                             foreach (SampleInfo sample in settings.SamplesInfo)
@@ -76,12 +76,12 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                         //確定時のみ検証するため DelayedTextField を使う（1文字ずつ検証すると入力できない）
                                         string selected_path = EditorGUILayout.DelayedTextField(sample.Path, GUILayout.ExpandWidth(true));
                                         //ファイル設定ボタン
-                                        if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_PATH_SETTING_BUTTON_NAME, apth_button_layout))
+                                        if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_PATH_SETTING_BUTTON_NAME, path_button_layout))
                                         {
                                             selected_path = EditorUtility.OpenFolderPanel(PACKAGE_INFO_SAMPLE_PATH_HEADER, Application.dataPath, string.Empty);
                                         }
                                         //パスリセットボタン（入力欄の古い値で上書きされないよう、比較対象もリセット値にする）
-                                        if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_RESET_BUTTON_NAME, apth_button_layout))
+                                        if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_RESET_BUTTON_NAME, path_button_layout))
                                         {
                                             sample.Path = PackageJsonValidator.PACKAGE_INFO_SAMPLE_KEYWORD_2;
                                             selected_path = sample.Path;
@@ -90,7 +90,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                         //空はフォルダ選択のキャンセルなので何もしない
                                         if (!string.IsNullOrEmpty(selected_path) && sample.Path != selected_path)
                                         {
-                                            if (PackageJsonValidator.IsValidSampleFolderpath(selected_path, out string sample_path))
+                                            if (PackageJsonValidator.IsValidSampleFolderPath(selected_path, out string sample_path))
                                             {
                                                 sample.Path = sample_path;
                                                 field_errors.Clear(sample);

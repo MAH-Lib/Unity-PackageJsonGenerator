@@ -76,7 +76,7 @@ Set the folder that contains the existing `package.json`, then click **Load pack
 | Required | License (ライセンス) | `license` | Choose from common SPDX licenses |
 | Required | Author (著者情報設定) | `author` | Name is required. E-mail and URL are optional |
 | Optional | Release version (リリースバージョン) | `unityRelease` | e.g. `0f1` |
-| Optional | Hide in editor (UMP除外フラグ) | `hideInEditor` | |
+| Optional | Hide in editor (UPM除外フラグ) | `hideInEditor` | |
 | Optional | Changelog / Documentation / License URL | `changelogUrl` / `documentationUrl` / `licensesUrl` | Must start with `http://` or `https://` |
 | Optional | Keywords (キーワード) | `keywords` | |
 | Optional | Samples (サンプル) | `samples` | Path is converted to start with `Samples~` |

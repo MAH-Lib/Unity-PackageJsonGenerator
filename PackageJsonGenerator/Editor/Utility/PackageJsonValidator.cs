@@ -55,7 +55,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         }
 
         /// <summary> サンプルのパスを "Samples~/..." 形式に変換（変換できない場合は false） </summary>
-        internal static bool IsValidSampleFolderpath(string path, out string sample_path)
+        internal static bool IsValidSampleFolderPath(string path, out string sample_path)
         {
             sample_path = string.Empty;
 
@@ -113,8 +113,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
 
             //外部パッケージ名の重複（不正な名前の行は出力されないので対象外）
             string[] duplicate_names = (optional_settings.Dependencies ?? new List<DependenciesInfo>())
-                .Where(info => info != null && IsValidPackageName(info.PacckageName))
-                .GroupBy(info => info.PacckageName)
+                .Where(info => info != null && IsValidPackageName(info.PackageName))
+                .GroupBy(info => info.PackageName)
                 .Where(group => group.Count() > 1)
                 .Select(group => group.Key)
                 .ToArray();

@@ -13,8 +13,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         //====定数======================================
         private const string OPTIONAL_PACKAGE_INFO_LABEL = "任意設定項目";
         private const string PACKAGE_INFO_UNITY_LABEL = "Unity 情報設定";
-        private const string PACKAGE_INFO_UNITY_RELEASE_VERSITON_LABEL = "リリースバージョン";
-        private const string PACKAGE_INFO_UPM_HIDE_LABEL = "UMP除外フラグ";
+        private const string PACKAGE_INFO_UNITY_RELEASE_VERSION_LABEL = "リリースバージョン";
+        private const string PACKAGE_INFO_UPM_HIDE_LABEL = "UPM除外フラグ";
         private const string PACKAGE_INFO_DOCS_LABEL = "ドキュメント情報設定";
         private const string PACKAGE_INFO_CHANGELOG_URL_LABEL = "変更ログURL";
         private const string PACKAGE_INFO_DOCUMENTATION_URL_LABEL = "ドキュメントURL";
@@ -83,7 +83,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             //リリースバージョン
             using (new EditorGUILayout.HorizontalScope())
             {
-                EditorGUILayout.LabelField(PACKAGE_INFO_UNITY_RELEASE_VERSITON_LABEL, label_layout);
+                EditorGUILayout.LabelField(PACKAGE_INFO_UNITY_RELEASE_VERSION_LABEL, label_layout);
                 settings.UnityRelease = EditorGUILayout.TextField(settings.UnityRelease, GUILayout.ExpandWidth(true));
             }
 

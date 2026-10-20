@@ -141,14 +141,14 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                     continue;
 
                 //初期値 "com." のままの行や不正な名前の行は出力しない
-                if (!PackageJsonValidator.IsValidPackageName(info.PacckageName))
+                if (!PackageJsonValidator.IsValidPackageName(info.PackageName))
                 {
-                    warnings.Add($"外部パッケージ名が正しくないため出力しません : {info.PacckageName}");
+                    warnings.Add($"外部パッケージ名が正しくないため出力しません : {info.PackageName}");
                     continue;
                 }
 
                 //UPM は完全一致のバージョンのみ対応（重複は生成前チェックで止めているが、念のため例外を出さない）
-                dependencies.TryAdd(info.PacckageName, ConvertToVersionString(info.Version));
+                dependencies.TryAdd(info.PackageName, ConvertToVersionString(info.Version));
             }
             return dependencies.Any() ? dependencies : null;
         }
@@ -178,7 +178,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 TryConvertToVersionVector(version, out Vector3Int version_vec);
                 DependenciesInfo info = new()
                 {
-                    PacckageName = key_value_pair.Key,
+                    PackageName = key_value_pair.Key,
                     Version = version_vec,
                     SelectPackageIndex = FindPackageIndex(key_value_pair.Key),
                 };

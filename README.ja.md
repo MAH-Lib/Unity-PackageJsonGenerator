@@ -74,7 +74,7 @@ UPM（Unity Package Manager）対応パッケージを公開するときに必�
 | 必須 | ライセンス | `license` | 主な SPDX ライセンスから選びます |
 | 必須 | 著者情報設定 | `author` | 著者名は必須、E-mail と URL は任意 |
 | 任意 | リリースバージョン | `unityRelease` | 例：`0f1` |
-| 任意 | UMP除外フラグ | `hideInEditor` | |
+| 任意 | UPM除外フラグ | `hideInEditor` | |
 | 任意 | 変更ログURL / ドキュメントURL / ライセンスURL | `changelogUrl` / `documentationUrl` / `licensesUrl` | `http://` か `https://` で始まる URL |
 | 任意 | キーワード | `keywords` | |
 | 任意 | サンプル | `samples` | パスは `Samples~` から始まる形に変換されます |

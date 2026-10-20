@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
 {
@@ -13,7 +14,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
 
         //====変数======================
         /// <summary> パッケージ名 </summary>
-        public string PacckageName;
+        [FormerlySerializedAs("PacckageName")] public string PackageName;
         /// <summary> バージョン </summary>
         public Vector3Int Version;
         /// <summary> パッケージ選択配列番号 </summary>
@@ -22,7 +23,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         //====コンストラクタ==============
         public DependenciesInfo()
         {
-            PacckageName = PACKAGE_DEFAULT_NAME;
+            PackageName = PACKAGE_DEFAULT_NAME;
             Version = Vector3Int.zero;
             SelectPackageIndex = 0;
         }
@@ -31,7 +32,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         /// <summary> リセット </summary>
         public void Reset()
         {
-            PacckageName = PACKAGE_DEFAULT_NAME;
+            PackageName = PACKAGE_DEFAULT_NAME;
             Version = Vector3Int.zero;
             SelectPackageIndex = 0;
         }

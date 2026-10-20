@@ -67,11 +67,11 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
             List<DependenciesInfo> infos = PackageSettingsConverter.ConvertToDependenciesInfo(dependencies, warnings);
 
             Assert.AreEqual(3, infos.Count);
-            Assert.AreEqual("com.a.b", infos[0].PacckageName);
+            Assert.AreEqual("com.a.b", infos[0].PackageName);
             Assert.AreEqual(new Vector3Int(1, 2, 3), infos[0].Version);
-            Assert.AreEqual("com.c.d", infos[1].PacckageName);
+            Assert.AreEqual("com.c.d", infos[1].PackageName);
             Assert.AreEqual(new Vector3Int(1, 2, 0), infos[1].Version);
-            Assert.AreEqual("com.e.f", infos[2].PacckageName);
+            Assert.AreEqual("com.e.f", infos[2].PackageName);
             Assert.AreEqual(new Vector3Int(1, 0, 0), infos[2].Version);
             //変換 2 件（com.c.d、com.e.f）と除外 1 件（com.g.h）
             Assert.AreEqual(3, warnings.Count);
@@ -82,7 +82,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
         {
             List<DependenciesInfo> infos = new()
             {
-                new() { PacckageName = "com.example.dep", Version = new Vector3Int(1, 0, 2) },
+                new() { PackageName = "com.example.dep", Version = new Vector3Int(1, 0, 2) },
                 new(),
             };
             List<string> warnings = new();
@@ -127,7 +127,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
                 UnityRelease = "0f1",
                 HideInEditor = true,
                 Keywords = new() { "tool", "editor" },
-                Dependencies = new() { new() { PacckageName = "com.example.dep", Version = new Vector3Int(3, 2, 1) } },
+                Dependencies = new() { new() { PackageName = "com.example.dep", Version = new Vector3Int(3, 2, 1) } },
                 SamplesInfo = new() { new() { DisplayName = "Basic", Description = "Basic sample", Path = "Samples~/Basic" } },
             };
             List<string> warnings = new();
@@ -156,7 +156,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
             Assert.AreEqual(optional_settings.HideInEditor, loaded_optional.HideInEditor);
             CollectionAssert.AreEqual(new[] { "tool", "editor" }, loaded_optional.Keywords);
             Assert.AreEqual(1, loaded_optional.Dependencies.Count);
-            Assert.AreEqual("com.example.dep", loaded_optional.Dependencies[0].PacckageName);
+            Assert.AreEqual("com.example.dep", loaded_optional.Dependencies[0].PackageName);
             Assert.AreEqual(new Vector3Int(3, 2, 1), loaded_optional.Dependencies[0].Version);
             Assert.AreEqual(1, loaded_optional.SamplesInfo.Count);
             Assert.AreEqual("Basic", loaded_optional.SamplesInfo[0].DisplayName);

@@ -47,7 +47,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                         _isShowDependencies = EditorGUILayout.Foldout(_isShowDependencies, PACKAGE_INFO_DEPENDENCIES_LIST_LABEL);
                         if (_isShowDependencies)
                         {
-                            GUILayoutOption depensencies_layout = GUILayout.MaxWidth(DrawerUtility.INFO_LABEL_LOW_INCIDENT_SIZE);
+                            GUILayoutOption dependencies_layout = GUILayout.MaxWidth(DrawerUtility.INFO_LABEL_LOW_INCIDENT_SIZE);
                             GUILayoutOption package_popup_layout = GUILayout.MaxWidth(200);
                             GUILayoutOption version_layout = GUILayout.MaxWidth(65);
                             GUILayoutOption version_input_layout = GUILayout.MaxWidth(65);
@@ -64,25 +64,25 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                     //パッケージ名
                                     using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_NAME_LABEL, depensencies_layout);
+                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_NAME_LABEL, dependencies_layout);
                                         //確定時のみ検証するため DelayedTextField を使う（1文字ずつ検証すると "." を入力できない）
-                                        string name = EditorGUILayout.DelayedTextField(dependencies.PacckageName, GUILayout.ExpandWidth(true));
+                                        string name = EditorGUILayout.DelayedTextField(dependencies.PackageName, GUILayout.ExpandWidth(true));
                                         name = name.ToLowerInvariant();
-                                        if (name != dependencies.PacckageName)
+                                        if (name != dependencies.PackageName)
                                         {
                                             if (string.IsNullOrEmpty(name))
                                             {
-                                                dependencies.PacckageName = DependenciesInfo.PACKAGE_DEFAULT_NAME;
+                                                dependencies.PackageName = DependenciesInfo.PACKAGE_DEFAULT_NAME;
                                                 field_errors.Clear(dependencies);
                                             }
                                             else if (PackageJsonValidator.IsValidPackageName(name))
                                             {
-                                                dependencies.PacckageName = name;
+                                                dependencies.PackageName = name;
                                                 field_errors.Clear(dependencies);
                                             }
                                             else
                                                 field_errors.Set(dependencies, string.Format(DrawerUtility.PACKAGE_NAME_ERROR_MESSAGE, name));
-                                            dependencies.SelectPackageIndex = PackageSettingsConverter.FindPackageIndex(dependencies.PacckageName);
+                                            dependencies.SelectPackageIndex = PackageSettingsConverter.FindPackageIndex(dependencies.PackageName);
                                         }
 
                                         EditorGUI.BeginDisabledGroup(!UnityPackageHelper.AccIsLoaded);
@@ -100,7 +100,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                                     //パッケージバージョン（UPM は完全一致のバージョンのみ対応）
                                     using (new EditorGUILayout.HorizontalScope())
                                     {
-                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_VERSION_LABEL, depensencies_layout);
+                                        EditorGUILayout.LabelField(DrawerUtility.PACKAGE_INFO_VERSION_LABEL, dependencies_layout);
                                         DrawerUtility.DrawVersionFields(ref dependencies.Version, version_layout, version_input_layout);
                                     }
                                 }
@@ -144,7 +144,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 return;
             if (!PackageSettingsConverter.TryConvertToVersionVector(package_versions[index], out info.Version))
                 Debug.LogWarning($"外部パッケージ {name} のバージョン \"{package_versions[index]}\" を {PackageSettingsConverter.ConvertToVersionString(info.Version)} として設定しました");
-            info.PacckageName = name;
+            info.PackageName = name;
             info.SelectPackageIndex = index;
         }
     }

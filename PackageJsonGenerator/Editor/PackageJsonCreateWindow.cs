@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MAH.Tools.PackageJsonGenerator.Editor
 {
@@ -12,7 +13,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         private const string PACKAGE_JSON_CREATE_WINDOW_NAME = "PackageJson Generator";
         private const string PACKAGE_JSON_MENU_PATH = "MAH/Generator/PackageJson Generator Window";
 
-        private const string PACKGAGE_JSON_OUTPUT_DEFAULT_PATH = "Assets";
+        private const string PACKAGE_JSON_OUTPUT_DEFAULT_PATH = "Assets";
 
         private const string PACKAGE_JSON_OUTPUT_SETTING_LABEL = "package.json ファイル操作";
         private const string PACKAGE_JSON_OUTPUT_PATH_SETTING_WINDOW_LABEL = "package.json の保存先を選択";
@@ -36,7 +37,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         [SerializeField] private PackageRequiredSettings _requiredSettings = new();
         [SerializeField] private PackageOptionalSettings _optionalSettings = new();
 
-        [SerializeField] private string _pacckageJsonPath = PACKGAGE_JSON_OUTPUT_DEFAULT_PATH;
+        [SerializeField, FormerlySerializedAs("_pacckageJsonPath")] private string _packageJsonPath = PACKAGE_JSON_OUTPUT_DEFAULT_PATH;
 
         [SerializeField] private RequiredSettingsDrawer _requiredDrawer = new();
         [SerializeField] private OptionalSettingsDrawer _optionalDrawer = new();
@@ -65,7 +66,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 _optionalDrawer = new();
                 _requiredDrawer.ResetLicense(_requiredSettings);
 
-                _pacckageJsonPath = PACKGAGE_JSON_OUTPUT_DEFAULT_PATH;
+                _packageJsonPath = PACKAGE_JSON_OUTPUT_DEFAULT_PATH;
 
                 _isInitialized = true;
             }
@@ -137,7 +138,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             using (new EditorGUILayout.HorizontalScope())
             {
                 EditorGUILayout.LabelField(PACKAGE_INFO_JSON_FILE_PATH_BUTTON, label_layout);
-                _pacckageJsonPath = EditorGUILayout.TextField(_pacckageJsonPath, GUILayout.ExpandWidth(true));
+                _packageJsonPath = EditorGUILayout.TextField(_packageJsonPath, GUILayout.ExpandWidth(true));
                 //ファイル設定ボタン
                 if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_PATH_SETTING_BUTTON_NAME, button_layout))
                 {
@@ -146,14 +147,14 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                     {
                         // 相対パスに変換（例: "Assets/..." 形式に）
                         if (selected_path.StartsWith(Application.dataPath))
-                            selected_path = $"{PACKGAGE_JSON_OUTPUT_DEFAULT_PATH}{selected_path.Substring(Application.dataPath.Length)}";
-                        _pacckageJsonPath = selected_path;
+                            selected_path = $"{PACKAGE_JSON_OUTPUT_DEFAULT_PATH}{selected_path.Substring(Application.dataPath.Length)}";
+                        _packageJsonPath = selected_path;
                     }
                 }
                 //パスリセットボタン
                 if (GUILayout.Button(DrawerUtility.PACKAGE_INFO_RESET_BUTTON_NAME, button_layout))
                 {
-                    _pacckageJsonPath = PACKGAGE_JSON_OUTPUT_DEFAULT_PATH;
+                    _packageJsonPath = PACKAGE_JSON_OUTPUT_DEFAULT_PATH;
                 }
             }
         }
@@ -184,7 +185,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
                 return;
             }
 
-            string file_path = PackageJsonFileUtility.GetPackageJsonPath(_pacckageJsonPath);
+            string file_path = PackageJsonFileUtility.GetPackageJsonPath(_packageJsonPath);
             if (File.Exists(file_path) &&
                 !EditorUtility.DisplayDialog(OVERWRITE_DIALOG_TITLE, $"{file_path} {OVERWRITE_DIALOG_MESSAGE}", OVERWRITE_DIALOG_OK, OVERWRITE_DIALOG_CANCEL))
             {
@@ -196,7 +197,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             List<string> warnings = new();
             PackageJsonInfo info = PackageSettingsConverter.ConvertToPackageJsonInfo(_requiredSettings, _optionalSettings, warnings);
             LogWarnings(warnings);
-            if (!PackageJsonFileUtility.TrySavePackageJson(_pacckageJsonPath, info, out string error_message))
+            if (!PackageJsonFileUtility.TrySavePackageJson(_packageJsonPath, info, out string error_message))
                 LogError(error_message);
             else
                 SetSucceededMessage($"{CREATE_SUCCEEDED_MESSAGE} : {file_path}");
@@ -207,7 +208,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
         private void LoadPackageJson()
         {
             _warningCount = 0;
-            if (!PackageJsonFileUtility.TryLoadPackageJson(_pacckageJsonPath, out PackageJsonInfo info, out string error_message))
+            if (!PackageJsonFileUtility.TryLoadPackageJson(_packageJsonPath, out PackageJsonInfo info, out string error_message))
             {
                 LogError(error_message);
                 Repaint();
@@ -223,7 +224,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             LogWarnings(warnings);
             _requiredDrawer.SyncLicense(_requiredSettings);
 
-            SetSucceededMessage($"{LOAD_SUCCEEDED_MESSAGE} : {PackageJsonFileUtility.GetPackageJsonPath(_pacckageJsonPath)}");
+            SetSucceededMessage($"{LOAD_SUCCEEDED_MESSAGE} : {PackageJsonFileUtility.GetPackageJsonPath(_packageJsonPath)}");
             Repaint();
         }
 

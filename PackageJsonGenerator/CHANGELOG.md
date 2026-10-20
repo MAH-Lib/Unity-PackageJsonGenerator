@@ -47,6 +47,7 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Loading a `package.json` that is not valid JSON no longer throws an exception.
 - Creating a `package.json` in a folder that does not exist, or when the file cannot be written, no longer throws an exception.
 - Negative numbers can no longer be entered for the package version or dependency versions. They are set to `0`.
+- Fixed a typo in the **Hide in editor** label (`UMP除外フラグ` → `UPM除外フラグ`).
 - A package name loaded from a `package.json` is now converted to lowercase. If it is still invalid, a warning is shown, and **Create package.json** stops with an error instead of writing the invalid name.
 
 ## [1.0.1] - 2025-07-06

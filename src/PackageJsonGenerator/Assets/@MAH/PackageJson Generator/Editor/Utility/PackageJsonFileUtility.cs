@@ -12,18 +12,18 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
     internal static class PackageJsonFileUtility
     {
         //====定数=======================
-        private const string PACKGAGE_JSON_OUTPUT_FILE_NAME = "package.json";
-        private const string FOLDER_EMPTY_ERORR_MESSAGE = "フォルダーパスが指定されていません";
-        private const string FOLDER_NOT_FOUND_ERORR_MESSAGE = "フォルダが存在しません";
-        private const string FILE_NOT_FOUND_ERORR_MESSAGE = "指定したフォルダに package.json が存在しません";
-        private const string SAVE_ERORR_MESSAGE = "package.json を保存できませんでした";
-        private const string LOAD_ERORR_MESSAGE = "package.json を読み込めませんでした";
+        private const string PACKAGE_JSON_OUTPUT_FILE_NAME = "package.json";
+        private const string FOLDER_EMPTY_ERROR_MESSAGE = "フォルダーパスが指定されていません";
+        private const string FOLDER_NOT_FOUND_ERROR_MESSAGE = "フォルダが存在しません";
+        private const string FILE_NOT_FOUND_ERROR_MESSAGE = "指定したフォルダに package.json が存在しません";
+        private const string SAVE_ERROR_MESSAGE = "package.json を保存できませんでした";
+        private const string LOAD_ERROR_MESSAGE = "package.json を読み込めませんでした";
 
         //====パス=======================
         /// <summary> フォルダーパスから package.json のパス取得（"/" 区切り） </summary>
         internal static string GetPackageJsonPath(string folder)
         {
-            return Path.Combine(folder ?? string.Empty, PACKGAGE_JSON_OUTPUT_FILE_NAME).Replace('\\', '/');
+            return Path.Combine(folder ?? string.Empty, PACKAGE_JSON_OUTPUT_FILE_NAME).Replace('\\', '/');
         }
 
         //====保存=======================
@@ -33,12 +33,12 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             error_message = string.Empty;
             if (string.IsNullOrWhiteSpace(folder))
             {
-                error_message = FOLDER_EMPTY_ERORR_MESSAGE;
+                error_message = FOLDER_EMPTY_ERROR_MESSAGE;
                 return false;
             }
             if (!Directory.Exists(folder))
             {
-                error_message = $"{FOLDER_NOT_FOUND_ERORR_MESSAGE} : {folder}";
+                error_message = $"{FOLDER_NOT_FOUND_ERROR_MESSAGE} : {folder}";
                 return false;
             }
 
@@ -54,7 +54,7 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             }
             catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
             {
-                error_message = $"{SAVE_ERORR_MESSAGE} : {exception.Message}";
+                error_message = $"{SAVE_ERROR_MESSAGE} : {exception.Message}";
                 return false;
             }
             AssetDatabase.Refresh();
@@ -69,14 +69,14 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             error_message = string.Empty;
             if (string.IsNullOrWhiteSpace(folder))
             {
-                error_message = FOLDER_EMPTY_ERORR_MESSAGE;
+                error_message = FOLDER_EMPTY_ERROR_MESSAGE;
                 return false;
             }
 
             string full_path = GetPackageJsonPath(folder);
             if (!File.Exists(full_path))
             {
-                error_message = $"{FILE_NOT_FOUND_ERORR_MESSAGE} : {full_path}";
+                error_message = $"{FILE_NOT_FOUND_ERROR_MESSAGE} : {full_path}";
                 return false;
             }
 
@@ -87,14 +87,14 @@ namespace MAH.Tools.PackageJsonGenerator.Editor
             }
             catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException || exception is JsonException)
             {
-                error_message = $"{LOAD_ERORR_MESSAGE} : {exception.Message}";
+                error_message = $"{LOAD_ERROR_MESSAGE} : {exception.Message}";
                 return false;
             }
 
             //空のファイルは null になる
             if (package_json_info == null)
             {
-                error_message = $"{LOAD_ERORR_MESSAGE} : {full_path}";
+                error_message = $"{LOAD_ERROR_MESSAGE} : {full_path}";
                 return false;
             }
             return true;

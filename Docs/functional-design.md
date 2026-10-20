@@ -80,7 +80,7 @@ PackageJson Generator/
 | Window | `_scrollPos` | `Vector3` | ○ | スクロール位置 |
 | Window | `_requiredSettings` | `PackageRequiredSettings` | ○ | 必須項目 |
 | Window | `_optionalSettings` | `PackageOptionalSettings` | ○ | 任意項目 |
-| Window | `_pacckageJsonPath` | `string` | ○ | 入出力フォルダ。初期値は `Assets` |
+| Window | `_packageJsonPath` | `string` | ○ | 入出力フォルダ。初期値は `Assets` |
 | Window | `_requiredDrawer` / `_optionalDrawer` | `RequiredSettingsDrawer` / `OptionalSettingsDrawer` | ○ | 各セクションの Drawer（下の画面の状態を持つ） |
 | Window | `_isInitialized` | `bool` | ○ | 初期化済みかどうか |
 | Window | `_fieldErrors` | `FieldErrorStore` | — | 欄ごとの入力エラー（§4）。キーは欄の定数、またはリストの行のオブジェクト |
@@ -142,7 +142,7 @@ UI ラベルはコード上の日本語ラベルをそのまま載せる。
 | 必須 | ライセンス | `License` | `license` | `LicenseType` を SPDX ID に変換（§3.3） |
 | 必須 | 著者名 / E-mail / URL | `AuthorInfo` | `author.name` / `.email` / `.url` | 必須なのは名前だけ |
 | 任意 | リリースバージョン | `PackageOptionalSettings.UnityRelease` | `unityRelease` | そのまま（形式の検証は無い） |
-| 任意 | UMP除外フラグ | `HideInEditor` | `hideInEditor` | bool。false でも必ず出力される |
+| 任意 | UPM除外フラグ | `HideInEditor` | `hideInEditor` | bool。false でも必ず出力される |
 | 任意 | 変更ログURL | `ChangelogURL` | `changelogUrl` | URL検証あり |
 | 任意 | ドキュメントURL | `DocumentationURL` | `documentationUrl` | URL検証あり |
 | 任意 | ライセンスURL | `LicensesURL` | `licensesUrl` | URL検証あり |
@@ -246,7 +246,7 @@ Load したときに表に無い SPDX ID が書かれていた場合は `Other` 
 
 続けて、外部パッケージ名の重複を調べる。名前が正しい形式の行のうち、同じ名前が 2 件以上あれば、重複した名前を `Debug.LogError` に出して生成を中止する（名前が正しくない行は出力されないので対象外）。
 
-### 4.4 サンプルのパス（`PackageJsonValidator.IsValidSampleFolderpath`）
+### 4.4 サンプルのパス（`PackageJsonValidator.IsValidSampleFolderPath`）
 
 1. `Browse` でフォルダを選ぶか、テキストを直接入力する（`DelayedTextField` なので、Enter かフォーカスアウトで確定したときに処理する）
 2. `\` を `/` に置き換え、`/` で区切ってフォルダ名の並びにする
@@ -314,7 +314,7 @@ Load で値が無い・形式が違う場合も例外は出さず、次のよう
 │   ライセンス情報設定                          │
 │   著者情報設定（著者名/E-mail/URL + Open URL）  │
 │ [任意設定項目]                              │
-│   Unity 情報設定（リリースバージョン/UMP除外フラグ） │
+│   Unity 情報設定（リリースバージョン/UPM除外フラグ） │
 │   ドキュメント情報設定（3種URL + Open URL）      │
 │   キーワード / サンプル / 外部パッケージ（Foldoutリスト）│
 └──────────────────────────────────────────┘
@@ -361,7 +361,7 @@ Load で値が無い・形式が違う場合も例外は出さず、次のよう
 | K-16 | 不具合 | **修正済み（2026-10-20）**。`PackageOptionalSettings.Reset()` が `HideInEditor` をリセットしない | `PackageOptionalSettings` |
 | K-17 | 不具合 | **修正済み（2026-10-20）**：enum をやめて `UnityVersionConverter` の表にし、`6000.6` と `5.0` を足した（§3.4）。対応 Unity の選択肢が古い（Unity 6 は 6000.0〜6000.2 まで。Unity 5 に 5.0 が無い） | `Definition/UnityVersion/` |
 | K-18 | 不具合 | **修正済み（2026-10-20）**：Load 時に小文字化して警告を出し、生成前チェックで形式も確かめるようにした。ライセンスは K-3 の修正で入力欄に表示・編集できる（§3.3）。Load したパッケージ名は検証されない。Load したライセンスが `Other` の場合、SPDX ID が UI に表示されない | `ConvertToPackageSettings` |
-| K-19 | 表記 | UI ラベルの誤字：`UMP除外フラグ`（正しくは UPM）。識別子の誤字：`_pacckageJsonPath`、`PacckageName`、`PACKGAGE_*` など（`VersionOperater.cs` は 2026-10-20 に K-1 の修正でファイルごと削除） | 各所 |
+| K-19 | 表記 | **修正済み（2026-10-21）**：下の名前と、同じ種類の誤り（`*_ERORR_MESSAGE` → `*_ERROR_MESSAGE`、`VERSITON` → `VERSION`、`depensencies_layout`、`apth_button_layout`、`IsValidSampleFolderpath` → `IsValidSampleFolderPath`）を直した。シリアライズされる `PackageName` と `_packageJsonPath` には `FormerlySerializedAs` で古い名前を残している。UI ラベルの誤字：`UMP除外フラグ`（正しくは UPM）。識別子の誤字：`_pacckageJsonPath`、`PacckageName`、`PACKGAGE_*` など（`VersionOperater.cs` は 2026-10-20 に K-1 の修正でファイルごと削除） | 各所 |
 | K-20 | 設計 | **修正済み（2026-10-21）**：検証（`PackageJsonValidator`）・変換（`PackageSettingsConverter`）・描画（`Drawer/`）に分け、検証と変換に EditMode テストを付けた（§2.1）。`PackageJsonCreateWindow` が UI・検証・変換をすべて抱えている（約1,080行） | — |
 | K-21 | 設計 | 開発用プロジェクトと配布フォルダに同じコードが二重にあり、手動で同期している（同期漏れのため、package.json の version が 1.0.0 と 1.0.1 で食い違っていたことがある。2026-10-20 に 1.0.1 へ揃えた） | `CONTRIBUTING.md` を参照 |
 | K-22 | 設計 | **修正済み（2026-10-21）**：負の値は 0 にするようにした（`DrawerUtility.DrawVersionFields`）。バージョン番号やバージョン構成要素に負の値を入力できる | `IntField` 各所 |

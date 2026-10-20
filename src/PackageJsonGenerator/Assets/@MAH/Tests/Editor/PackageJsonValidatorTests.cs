@@ -54,9 +54,9 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
         [TestCase("Samples/", false, "")]
         [TestCase("Assets/Foo", false, "")]
         [TestCase("", false, "")]
-        public void IsValidSampleFolderpath(string path, bool expected, string expected_path)
+        public void IsValidSampleFolderPath(string path, bool expected, string expected_path)
         {
-            bool result = PackageJsonValidator.IsValidSampleFolderpath(path, out string sample_path);
+            bool result = PackageJsonValidator.IsValidSampleFolderPath(path, out string sample_path);
 
             Assert.AreEqual(expected, result);
             Assert.AreEqual(expected_path, sample_path);
@@ -107,8 +107,8 @@ namespace MAH.Tools.PackageJsonGenerator.Editor.Tests
         public void CanCreatePackageJson_DuplicateDependencies()
         {
             CreateValidSettings(out PackageRequiredSettings required_settings, out PackageOptionalSettings optional_settings);
-            optional_settings.Dependencies.Add(new() { PacckageName = "com.example.dep" });
-            optional_settings.Dependencies.Add(new() { PacckageName = "com.example.dep" });
+            optional_settings.Dependencies.Add(new() { PackageName = "com.example.dep" });
+            optional_settings.Dependencies.Add(new() { PackageName = "com.example.dep" });
             //不正な名前（初期値 "com."）の重複は出力されないので対象外
             optional_settings.Dependencies.Add(new());
             optional_settings.Dependencies.Add(new());
