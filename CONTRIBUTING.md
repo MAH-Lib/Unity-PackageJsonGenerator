@@ -1,6 +1,6 @@
 # 開発ガイド（CONTRIBUTING）
 
-> 最終更新日：2026-10-21 ／ 対象：`com.mah.package-json-generator` v1.0.1 ／ 開発環境 Unity 6000.3.26f1
+> 最終更新日：2026-10-23 ／ 対象：`com.github.mah.package-json-generator` v2.0.0 ／ 開発環境 Unity 6000.3.26f1
 > 関連文書：[README.ja.md](README.ja.md)（利用者向け）／[Docs/functional-design.md](Docs/functional-design.md)（現状仕様・既知の問題）／[CLAUDE.md](CLAUDE.md)（AI 向け作業ルール）
 
 このリポジトリで開発する人のための手順書です。利用者向けの説明は README にあります。
@@ -29,7 +29,7 @@ Unity-PackageJsonGenerator/
 | 項目 | 内容 |
 |---|---|
 | Unity | 6000.3.26f1（`src/PackageJsonGenerator/ProjectSettings/ProjectVersion.txt`） |
-| パッケージの対応下限 | 6000.0（package.json の `unity`）。下限より新しい API を使わないよう気をつける |
+| パッケージの対応下限 | 2022.1（package.json の `unity`）。下限より新しい API を使わないよう気をつける。C# 9 の構文（`new()`）と .NET Standard 2.1 の API（`Split(char, StringSplitOptions)`、`Dictionary.TryAdd`）を使っているため、2021.2 より前には下げられない |
 | 依存 | `com.unity.nuget.newtonsoft-json`（package.json では 3.2.1、開発用プロジェクトでは 3.2.2 が入っている） |
 | IDE | Visual Studio / Rider / VS Code（`.vscode/` あり） |
 

@@ -7,6 +7,8 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-23
+
 ### Added
 
 - Package documentation: `README.md`, `CHANGELOG.md` and `LICENSE.md`.
@@ -28,11 +30,11 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** The package name is now `com.github.mah.package-json-generator` (was `com.mah.package-json-generator`). If you added this package to `Packages/manifest.json` by hand, replace the old key with the new name. You can also remove the old package in Package Manager and install it again from the Git URL.
+- The minimum supported Unity version is now `2022.1` (was `6000.0`).
 - The "None Data ..." text shown for empty lists is now "No data" (English) or "データがありません" (Japanese).
-
 - The default Unity version is now `6000.0` (was `6000.1`). When you change the Major version, the Minor version is set to the oldest one in the list.
 - The Unity version is now shown as numbers (for example `6000 (Unity 6)` and `3`) instead of enum names.
-
 - Dependencies are now always written as exact versions (`"X.Y.Z"`), because Unity Package Manager does not support version ranges. When loading a `package.json`, comparison values such as `>=1.2.0` are converted to `1.2.0`, and ranges such as `1.0.0 - 2.0.0` are converted to their lower bound, with a warning in the Console.
 
 ### Removed
@@ -77,6 +79,7 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional settings: Unity release, hide in editor, changelog/documentation/license URLs, keywords, samples and dependencies.
 - Load an existing `package.json` into the window for editing.
 
-[Unreleased]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/1.0.1...HEAD
+[Unreleased]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/1.0.1...2.0.0
 [1.0.1]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/v1.0.0...1.0.1
 [1.0.0]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/releases/tag/v1.0.0

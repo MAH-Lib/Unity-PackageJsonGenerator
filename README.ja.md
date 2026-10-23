@@ -8,7 +8,7 @@ UPM（Unity Package Manager）対応パッケージを公開するときに必�
 
 | 項目 | バージョン |
 |---|---|
-| Unity | 6000.0 以上 |
+| Unity | 2022.1 以上 |
 | 依存パッケージ | `com.unity.nuget.newtonsoft-json` 3.2.1（自動でインストールされます） |
 
 ## インストール方法
@@ -29,10 +29,15 @@ UPM（Unity Package Manager）対応パッケージを公開するときに必�
 `Packages/manifest.json` の `dependencies` に次の 1 行を追加します。
 
 ```json
-"com.mah.package-json-generator": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator.git?path=PackageJsonGenerator"
+"com.github.mah.package-json-generator": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator.git?path=PackageJsonGenerator"
 ```
 
-特定のバージョンに固定したい場合は、URL の末尾にリリースタグを付けます（例：`...?path=PackageJsonGenerator#1.0.1`）。使えるタグは [Tags](../../tags) で確認できます。
+特定のバージョンに固定したい場合は、URL の末尾にリリースタグを付けます（例：`...?path=PackageJsonGenerator#2.0.0`）。使えるタグは [Tags](../../tags) で確認できます。
+
+### 1.x から更新する場合
+
+2.0.0 でパッケージ名が `com.mah.package-json-generator` から `com.github.mah.package-json-generator` に変わりました。`Packages/manifest.json` に書いている場合は、キーを新しい名前に書き換えてください。Package Manager で古いパッケージを削除してから、Git URL で入れ直しても構いません。
+1.x のタグ（`v1.0.0`、`1.0.1`）を指定するときは、古い名前 `com.mah.package-json-generator` をキーに使ってください。
 
 ## 使い方
 

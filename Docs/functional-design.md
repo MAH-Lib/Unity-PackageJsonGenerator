@@ -1,6 +1,6 @@
 # 機能設計書：PackageJson Generator
 
-> 最終更新日：2026-10-21 ／ 対象バージョン：パッケージ `com.mah.package-json-generator` v1.0.1／開発環境 Unity 6000.3.26f1（対応 Unity 6000.0 以上）
+> 最終更新日：2026-10-23 ／ 対象バージョン：パッケージ `com.github.mah.package-json-generator` v2.0.0／開発環境 Unity 6000.3.26f1（対応 Unity 2022.1 以上）
 > 関連文書：`README.md`（利用者向け）／`CONTRIBUTING.md`（開発手順）／`CLAUDE.md`（AI向け作業ルール）
 > **位置づけ**：本書は **現状の実装の振る舞い** を書き起こしたもので、「あるべき仕様」ではない。実装とずれている点や不具合の候補は §8「既知の問題」にまとめ、修正は別の作業で行う。PRD・アーキテクチャ文書・用語集はまだ無いので、クラス名はコード上の名前をそのまま使う
 
@@ -370,7 +370,7 @@ Load で値が無い・形式が違う場合も例外は出さず、次のよう
 | 項目 | 内容 |
 |---|---|
 | 依存 | `com.unity.nuget.newtonsoft-json` 3.2.1（このツール自身の package.json で宣言） |
-| 対応 Unity | 6000.0 以上（package.json の `unity`） |
+| 対応 Unity | 2022.1 以上（package.json の `unity`） |
 | 永続化 | ドメインリロード（スクリプトの再コンパイルなど）では入力内容が残る（§2.2）。ウィンドウを閉じると今の入力は消えるが、Load / Create したパッケージは「記憶したパッケージ」から選び直せる（Unity Editor を閉じるまで。§5）。表示言語は EditorPrefs に保存する |
 | エラー通知 | 入力エラーは欄の下（§4）、Create・Load の結果はファイル操作の欄（§5）に表示する。あわせて Console にも `Debug.LogWarning` / `Debug.LogError` で出す。メッセージは表示言語に合わせる |
 | ローカライズ | 英語・日本語。画面のラベル・入力エラー・操作結果・確認ダイアログ・Console のメッセージを、`TextId` と `LocalizedText` の表で切り替える。ボタン名（`Browse`・`Reset`・`Open URL`・`Add`・`Remove`・`Create package.json`・`Load package.json`）とライセンスの選択肢は、どちらの言語でも英語。言語はウィンドウ右上で選び、EditorPrefs（`MAH.PackageJsonGenerator.Language`）に保存する。一度も選んでいないときは、`Application.systemLanguage` が日本語なら日本語、それ以外は英語。切り替えたときは、表示中の入力エラーと操作結果を消す（言語が混ざらないようにするため） |
