@@ -1,6 +1,6 @@
 # 機能設計書：PackageJson Generator
 
-> 最終更新日：2026-10-23 ／ 対象バージョン：パッケージ `com.github.mah.package-json-generator` v2.0.0／開発環境 Unity 6000.3.26f1（対応 Unity 2022.1 以上）
+> 最終更新日：2026-10-23 ／ 対象バージョン：パッケージ `com.github.mah.package-json-generator` v2.0.1／開発環境 Unity 6000.3.26f1（対応 Unity 2022.1 以上）
 > 関連文書：`README.md`（利用者向け）／`CONTRIBUTING.md`（開発手順）／`CLAUDE.md`（AI向け作業ルール）
 > **位置づけ**：本書は **現状の実装の振る舞い** を書き起こしたもので、「あるべき仕様」ではない。実装とずれている点や不具合の候補は §8「既知の問題」にまとめ、修正は別の作業で行う。PRD・アーキテクチャ文書・用語集はまだ無いので、クラス名はコード上の名前をそのまま使う
 
@@ -40,8 +40,9 @@ graph TB
 ```text
 PackageJson Generator/
 ├── package.json                         # このツール自身のパッケージ定義
+├── Tests/Editor/                        # EditMode テスト（asmdef は UNITY_INCLUDE_TESTS のときだけコンパイル）
 └── Editor/
-    ├── MAH.PackageJson_Generator.Editor.asmdef
+    ├── MAH.PackageJson_Generator.Editor.asmdef  # defineConstraints は入れない（入れると利用者の環境でコンパイルされない）
     ├── AssemblyInfo.cs                  # InternalsVisibleTo（開発用プロジェクトのテストから internal を呼ぶため）
     ├── PackageJsonCreateWindow.cs       # Window の生成・全体の配置・ファイル操作の欄・Create / Load・操作結果の表示
     ├── Drawer/
@@ -75,7 +76,7 @@ PackageJson Generator/
 ```
 
 > ※ 開発用プロジェクトの `Assets/@MAH/Editor/Utility/LanguageUtility.cs` はこのパッケージに含まれず、どこからも参照されていない
-> ※ 開発用プロジェクトの `Assets/@MAH/Tests/Editor/` に、`PackageJsonValidator` と `PackageSettingsConverter` の EditMode テストがある（パッケージには含まれない）
+> ※ パッケージ内の `Tests/Editor/` に、`PackageJsonValidator` と `PackageSettingsConverter` などの EditMode テストがある（アセンブリ `MAH.PackageJson_Generator.Editor.Tests`。`testables` に入れたときだけコンパイルされる）
 
 ### 2.2 状態
 
