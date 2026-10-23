@@ -1,6 +1,6 @@
 # 開発ガイド（CONTRIBUTING）
 
-> 最終更新日：2026-10-23 ／ 対象：`com.github.mah.package-json-generator` v2.0.1 ／ 開発環境 Unity 6000.3.26f1
+> 最終更新日：2026-10-24 ／ 対象：`com.github.mah-lib.package-json-generator` v2.0.2 ／ 開発環境 Unity 6000.3.26f1
 > 関連文書：[README.ja.md](README.ja.md)（利用者向け）／[Docs/functional-design.md](Docs/functional-design.md)（現状仕様・既知の問題）／[CLAUDE.md](CLAUDE.md)（AI 向け作業ルール）
 
 このリポジトリで開発する人のための手順書です。利用者向けの説明は README にあります。
