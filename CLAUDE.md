@@ -8,7 +8,7 @@
 
 ## プロジェクト概要
 
-UPM パッケージ `com.github.mah.package-json-generator`（1.x までは `com.mah.package-json-generator`）。GUI から `package.json` を作成する Unity Editor 拡張（EditorWindow / IMGUI）。
+UPM パッケージ `com.github.mah.package-json-generator`。GUI から `package.json` を作成する Unity Editor 拡張（EditorWindow / IMGUI）。
 開発環境は Unity 6000.3.26f1 / C#。パッケージの対応下限は Unity 2022.1。
 
 ---
