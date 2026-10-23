@@ -34,11 +34,6 @@ UPM（Unity Package Manager）対応パッケージを公開するときに必�
 
 特定のバージョンに固定したい場合は、URL の末尾にリリースタグを付けます（例：`...?path=PackageJsonGenerator#2.0.0`）。使えるタグは [Tags](../../tags) で確認できます。
 
-### 1.x から更新する場合
-
-2.0.0 でパッケージ名が `com.mah.package-json-generator` から `com.github.mah.package-json-generator` に変わりました。`Packages/manifest.json` に書いている場合は、キーを新しい名前に書き換えてください。Package Manager で古いパッケージを削除してから、Git URL で入れ直しても構いません。
-1.x のタグ（`v1.0.0`、`1.0.1`）を指定するときは、古い名前 `com.mah.package-json-generator` をキーに使ってください。
-
 ## 使い方
 
 > ウィンドウは英語と日本語に対応しています。ウィンドウ右上の **言語**（英語表示では **Language**）で切り替えられ、選んだ言語は次回も使われます。初めて開いたときは、PC の言語が日本語なら日本語、それ以外なら英語で表示されます。

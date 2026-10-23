@@ -34,11 +34,6 @@ Add the following line to the `dependencies` section of `Packages/manifest.json`
 
 To pin a specific version, append a release tag to the URL (for example `...?path=PackageJsonGenerator#2.0.0`). See [Tags](../../tags) for the available tags.
 
-### Updating from 1.x
-
-In 2.0.0, the package name changed from `com.mah.package-json-generator` to `com.github.mah.package-json-generator`. If you added the package to `Packages/manifest.json`, replace the old key with the new name. You can also remove the old package in Package Manager and install it again from the Git URL.
-To pin a 1.x tag (`v1.0.0` or `1.0.1`), use the old name `com.mah.package-json-generator` as the key.
-
 ## Usage
 
 > The window is available in English and Japanese. Choose the language from **Language** at the top right of the window. Your choice is saved for next time. When you open the window for the first time, it uses Japanese if your computer's language is Japanese, and English otherwise. (The screenshots below show the Japanese window.)
