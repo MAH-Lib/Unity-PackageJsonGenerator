@@ -1,6 +1,6 @@
 # 機能設計書：PackageJson Generator
 
-> 最終更新日：2026-10-23 ／ 対象バージョン：パッケージ `com.github.mah.package-json-generator` v2.0.1／開発環境 Unity 6000.3.26f1（対応 Unity 2022.1 以上）
+> 最終更新日：2026-10-24 ／ 対象バージョン：パッケージ `com.github.mah-lib.package-json-generator` v2.0.2／開発環境 Unity 6000.3.26f1（対応 Unity 2022.1 以上）
 > 関連文書：`README.md`（利用者向け）／`CONTRIBUTING.md`（開発手順）／`CLAUDE.md`（AI向け作業ルール）
 > **位置づけ**：本書は **現状の実装の振る舞い** を書き起こしたもので、「あるべき仕様」ではない。実装とずれている点や不具合の候補は §8「既知の問題」にまとめ、修正は別の作業で行う。PRD・アーキテクチャ文書・用語集はまだ無いので、クラス名はコード上の名前をそのまま使う
 

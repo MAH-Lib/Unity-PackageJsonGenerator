@@ -29,7 +29,7 @@ An Editor extension that lets you create the `package.json` file required to pub
 Add the following line to the `dependencies` section of `Packages/manifest.json`:
 
 ```json
-"com.github.mah.package-json-generator": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator.git?path=PackageJsonGenerator"
+"com.github.mah-lib.package-json-generator": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator.git?path=PackageJsonGenerator"
 ```
 
 To pin a specific version, append a release tag to the URL (for example `...?path=PackageJsonGenerator#2.0.0`). See [Tags](../../tags) for the available tags.

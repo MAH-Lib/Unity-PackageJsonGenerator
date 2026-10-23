@@ -7,6 +7,12 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-10-24
+
+### Changed
+
+- **Breaking:** The package name is now `com.github.mah-lib.package-json-generator` (was `com.github.mah.package-json-generator`). If you added this package to `Packages/manifest.json` by hand, replace the old key with the new name. You can also remove the old package in Package Manager and install it again from the Git URL.
+
 ## [2.0.1] - 2026-10-23
 
 ### Fixed
@@ -93,7 +99,8 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional settings: Unity release, hide in editor, changelog/documentation/license URLs, keywords, samples and dependencies.
 - Load an existing `package.json` into the window for editing.
 
-[Unreleased]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.1...HEAD
+[Unreleased]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.2...HEAD
+[2.0.2]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/1.0.1...2.0.0
 [1.0.1]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/v1.0.0...1.0.1
