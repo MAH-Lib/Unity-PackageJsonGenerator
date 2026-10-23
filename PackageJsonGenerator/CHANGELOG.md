@@ -7,6 +7,20 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-10-23
+
+### Fixed
+
+- The **MAH > Generator > PackageJson Generator Window** menu item was missing when the package was installed from a Git URL or Package Manager. The package code is now always compiled.
+
+### Changed
+
+- The EditMode tests (`MAH.PackageJson_Generator.Editor.Tests`) are now included in the package under `Tests/Editor`. They are compiled only when the package is listed in `testables`.
+
+### Removed
+
+- The unused `Tests` assembly definition in `Editor/Definition/Tests`.
+
 ## [2.0.0] - 2026-10-23
 
 ### Added
@@ -79,7 +93,8 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional settings: Unity release, hide in editor, changelog/documentation/license URLs, keywords, samples and dependencies.
 - Load an existing `package.json` into the window for editing.
 
-[Unreleased]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.0...HEAD
+[Unreleased]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/1.0.1...2.0.0
 [1.0.1]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/compare/v1.0.0...1.0.1
 [1.0.0]: https://github.com/MAH-Lib/Unity-PackageJsonGenerator/releases/tag/v1.0.0

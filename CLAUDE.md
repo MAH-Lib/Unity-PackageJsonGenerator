@@ -26,7 +26,7 @@ Docs/functional-design.md    <!-- 入力項目⇔JSONキー対応、検証仕様
 ### 作業前に必ず行うこと
 - 既存ファイルを変更する前に、対象ファイルを全て読む
 - 新しいクラスを作る前に、`Definition/`・`Utility/`・`Drawer/` の似たクラスを 1 つ読んで書き方を確認する
-- 検証（`PackageJsonValidator`）や変換（`PackageSettingsConverter`）を変えたら、`Assets/@MAH/Tests/Editor/` の EditMode テストも追加・修正する
+- 検証（`PackageJsonValidator`）や変換（`PackageSettingsConverter`）を変えたら、`Assets/@MAH/PackageJson Generator/Tests/Editor/` の EditMode テストも追加・修正する
 - 複数ファイルにまたがる変更は、計画を先に示して承認を得る
 - 機能追加・修正に取りかかるときは、`.steering/[YYYYMMDD]-[開発タイトル]/` に `requirements.md` → `design.md` → `tasklist.md` を 1 ファイルずつ承認を得ながら作ってから実装する（誤字修正などの小さな変更は除く）。完了後も削除しない
 - 既知の問題（K-xx）を直すときは、該当する ID を確認し、修正後に functional-design.md の §8 を更新する

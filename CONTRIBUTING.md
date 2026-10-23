@@ -1,6 +1,6 @@
 # 開発ガイド（CONTRIBUTING）
 
-> 最終更新日：2026-10-23 ／ 対象：`com.github.mah.package-json-generator` v2.0.0 ／ 開発環境 Unity 6000.3.26f1
+> 最終更新日：2026-10-23 ／ 対象：`com.github.mah.package-json-generator` v2.0.1 ／ 開発環境 Unity 6000.3.26f1
 > 関連文書：[README.ja.md](README.ja.md)（利用者向け）／[Docs/functional-design.md](Docs/functional-design.md)（現状仕様・既知の問題）／[CLAUDE.md](CLAUDE.md)（AI 向け作業ルール）
 
 このリポジトリで開発する人のための手順書です。利用者向けの説明は README にあります。
@@ -12,8 +12,7 @@ Unity-PackageJsonGenerator/
 ├── PackageJsonGenerator/          # 配布フォルダ（Git URL の ?path= が指す場所。利用者はここをインストールする）
 ├── src/PackageJsonGenerator/      # 開発用 Unity プロジェクト
 │   └── Assets/@MAH/
-│       ├── PackageJson Generator/ # ★ パッケージ本体の開発場所（配布フォルダと同じ内容）
-│       ├── Tests/Editor/          # EditMode テスト（パッケージに含まれない。§5）
+│       ├── PackageJson Generator/ # ★ パッケージ本体の開発場所（配布フォルダと同じ内容。EditMode テストの Tests/Editor/ も含む。§5）
 │       └── Editor/Utility/        # パッケージに含まれない共通コード（LanguageUtility.cs。現在は未使用）
 ├── Docs/                          # 開発者向けドキュメント
 ├── Image/                         # README 用の画像
@@ -100,7 +99,8 @@ diff -r "src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator" PackageJson
 2. **EditMode** タブで **Run All** を押す
 3. `MAH.PackageJson_Generator.Editor.Tests` のテストがすべて成功（緑）になることを確かめる
 
-テストは `src/PackageJsonGenerator/Assets/@MAH/Tests/Editor/` にあり、パッケージには含めません（配布フォルダへの同期の対象外）。パッケージ側の `Editor/AssemblyInfo.cs` の `InternalsVisibleTo` で、テストから `internal` のクラスを呼べるようにしています。
+テストは `src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator/Tests/Editor/` にあり、パッケージに含めます（配布フォルダへ同期されます）。テスト用の asmdef は `UNITY_INCLUDE_TESTS` のときだけコンパイルされるので、利用者の環境（`testables` に入れていない場合）には影響しません。パッケージ側の `Editor/AssemblyInfo.cs` の `InternalsVisibleTo` で、テストから `internal` のクラスを呼べるようにしています。
+**本体の asmdef（`MAH.PackageJson_Generator.Editor.asmdef`）には `defineConstraints` を入れないでください。** 開発用プロジェクトでは `UNITY_INCLUDE_TESTS` が常に定義されるため気づけませんが、利用者の環境ではアセンブリがコンパイルされず、メニューが出なくなります（2.0.0 の不具合）。制約を付けてよいのはテスト用の asmdef だけです。
 検証や変換の処理を変えたら、テストも追加・修正してください。画面（Drawer・Window）の自動テストはありません。
 
 ### 5.2 手での確認
