@@ -1,7 +1,7 @@
 {
   "name": "com.github.mah.package-json-generator",
   "version": "2.0.0",
-  "description": "UnityのUPM形式に準拠した package.json をGUIから簡単に生成できるエディタウィンドウです。必要な情報を入力して「Create」ボタンを押すだけで、自動的にpackage.jsonを作成します。",
+  "description": "An Editor window for creating a UPM-compliant package.json from a GUI. Fill in the fields and click Create to generate the file.",
   "displayName": "PackageJsonGenerator",
   "unity": "2022.1",
   "license": "MIT",

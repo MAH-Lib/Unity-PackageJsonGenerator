@@ -4,7 +4,7 @@ An Editor window for creating a UPM (Unity Package Manager) `package.json` file 
 
 ## Requirements
 
-- Unity 6000.0 or later
+- Unity 2022.1 or later
 - `com.unity.nuget.newtonsoft-json` 3.2.1 (installed automatically as a dependency)
 
 ## Quick start

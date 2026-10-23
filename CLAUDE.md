@@ -8,8 +8,8 @@
 
 ## プロジェクト概要
 
-UPM パッケージ `com.mah.package-json-generator`。GUI から `package.json` を作成する Unity Editor 拡張（EditorWindow / IMGUI）。
-開発環境は Unity 6000.3.26f1 / C#。パッケージの対応下限は Unity 6000.0。
+UPM パッケージ `com.github.mah.package-json-generator`（1.x までは `com.mah.package-json-generator`）。GUI から `package.json` を作成する Unity Editor 拡張（EditorWindow / IMGUI）。
+開発環境は Unity 6000.3.26f1 / C#。パッケージの対応下限は Unity 2022.1。
 
 ---
 
@@ -35,7 +35,7 @@ Docs/functional-design.md    <!-- 入力項目⇔JSONキー対応、検証仕様
 - 配布フォルダ `PackageJsonGenerator/` を直接編集しない。編集するのは `src/PackageJsonGenerator/Assets/@MAH/PackageJson Generator/` だけ。配布フォルダへは CONTRIBUTING.md §4 の手順でコピーする（2 つが食い違うと、利用者に古いコードが届くため）
 - `.meta` ファイルの GUID を作り直したり書き換えたりしない（利用者のプロジェクトで参照が切れるため）
 - 新しいファイルを作ったら `.meta` も作る。GUID は新しく生成した 32 桁の 16 進数にする
-- 対応下限の Unity 6000.0 に無い API を使わない
+- 対応下限の Unity 2022.1 に無い API を使わない
 - 識別子の綴りの誤りや名前の付け直しを、ついでに直さない。リネームは専用の変更として分ける（K-19 の綴りの誤りは 2026-10-21 に修正済み。`FormerlySerializedAs` の古い名前は消さない）
 - `#if UNITY_EDITOR` ガードを外さない
 - `main` ブランチに直接コミットしない（利用者が Git URL で取得するブランチのため）

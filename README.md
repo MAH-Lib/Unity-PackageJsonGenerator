@@ -8,7 +8,7 @@ An Editor extension that lets you create the `package.json` file required to pub
 
 | Item | Version |
 |---|---|
-| Unity | 6000.0 or later |
+| Unity | 2022.1 or later |
 | Dependency | `com.unity.nuget.newtonsoft-json` 3.2.1 (installed automatically) |
 
 ## Installation
@@ -29,10 +29,15 @@ An Editor extension that lets you create the `package.json` file required to pub
 Add the following line to the `dependencies` section of `Packages/manifest.json`:
 
 ```json
-"com.mah.package-json-generator": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator.git?path=PackageJsonGenerator"
+"com.github.mah.package-json-generator": "https://github.com/MAH-Lib/Unity-PackageJsonGenerator.git?path=PackageJsonGenerator"
 ```
 
-To pin a specific version, append a release tag to the URL (for example `...?path=PackageJsonGenerator#1.0.1`). See [Tags](../../tags) for the available tags.
+To pin a specific version, append a release tag to the URL (for example `...?path=PackageJsonGenerator#2.0.0`). See [Tags](../../tags) for the available tags.
+
+### Updating from 1.x
+
+In 2.0.0, the package name changed from `com.mah.package-json-generator` to `com.github.mah.package-json-generator`. If you added the package to `Packages/manifest.json`, replace the old key with the new name. You can also remove the old package in Package Manager and install it again from the Git URL.
+To pin a 1.x tag (`v1.0.0` or `1.0.1`), use the old name `com.mah.package-json-generator` as the key.
 
 ## Usage
 
