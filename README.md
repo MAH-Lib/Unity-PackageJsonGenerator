@@ -36,7 +36,7 @@ To pin a specific version, append a release tag to the URL (for example `...?pat
 
 ## Usage
 
-> The window is available in English and Japanese. Choose the language from **Language** at the top right of the window. Your choice is saved for next time. When you open the window for the first time, it uses Japanese if your computer's language is Japanese, and English otherwise. (The screenshots below show the Japanese window.)
+> The window is available in English and Japanese. Choose the language from **Language** at the top right of the window. Your choice is saved for next time. When you open the window for the first time, it uses Japanese if your computer's language is Japanese, and English otherwise. (The screenshots below show the English window.)
 
 1. From the menu bar, select **MAH > Generator > PackageJson Generator Window**.
 
